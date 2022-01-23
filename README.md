@@ -1,4 +1,4 @@
-# 2021 Romanowicz et al. Soil Systems
+# Romanowicz et al., 2021, Soil Systems
 
 **Manuscript:** Rainfall Alters Permafrost Soil Redox Conditions, but Meta-Omics Show Divergent Microbial Community Responses by Tundra Type in the Arctic [(DOI: 10.3390/soilsystems5010017)](https://www.mdpi.com/2571-8789/5/1/17)
 
