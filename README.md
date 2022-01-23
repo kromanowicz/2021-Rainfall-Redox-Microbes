@@ -7,6 +7,6 @@
 **Link to Rendered Code:** [TDB]()
 
 **Original .fastq Files:**
-The original .fastq files were submitted to the NCBI Sequence Read Archive under BioProject [PRJNA666429](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA666429).
+Original .fastq files were submitted to NCBI Sequence Read Archive under BioProject [PRJNA666429](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA666429).
 
 Direct any questions regarding this repository to lead author [Karl J. Romanowicz](mailto:kjromano@umich.edu).
