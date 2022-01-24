@@ -1,0 +1,13 @@
+Taxonomy,Tussock (%),Wet Sedge (%),Mean Difference,"Paired t-test
+p-value"
+Actinobacteria  ,24 (6),27 (2),3%,N.S.
+Acidobacteria  ,34 (5),10 (0),24%,0.011
+Alphaproteobacteria  ,15 (4),8 (1),7%,N.S.
+Betaproteobacteria  ,2 (1),6 (1),4%,0.002
+Deltaproteobacteria  ,4 (0),13 (0),9%,0.002
+Gammaproteobacteria  ,11 (0),2 (0),9%,< 0.001
+Bacteroidetes  ,0 (0),2 (1),2%,N.S.
+Chloroflexi  ,0 (0),8 (0),8%,< 0.001
+Firmicutes  ,4 (1),15 (2),11%,0.007
+Euryarchaeota  ,0 (0),2 (0),2%,0.013
+Ascomycetes  ,1 (0),0 (0),1%,0.013
