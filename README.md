@@ -4,7 +4,7 @@
 
 **Authors:** Karl J. Romanowicz, B.C. Crump, and G.W. Kling
 
-**Accepted in:** *Soil Systems 2021, 5(1): 17* on March 10, 2021
+**Published:** *Soil Systems 2021, 5(1): 17*
 
 **Link to Rendered Code:** [TDB]()
 
