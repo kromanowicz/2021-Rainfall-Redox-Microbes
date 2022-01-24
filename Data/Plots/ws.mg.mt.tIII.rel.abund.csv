@@ -1,0 +1,93 @@
+Sample,Tier_III,Mean,SD
+WS-MG,Amino acid metabolism ,4.63,0.16
+WS-MT-T0,Amino acid metabolism ,2.33,0.15
+WS-MT-T4,Amino acid metabolism ,2.25,0.10
+WS-MT-T24,Amino acid metabolism ,2.17,0.00
+WS-MG,Metabolism of other amino acids ,1.85,0.04
+WS-MT-T0,Metabolism of other amino acids ,0.88,0.12
+WS-MT-T4,Metabolism of other amino acids ,0.85,0.03
+WS-MT-T24,Metabolism of other amino acids ,0.95,0.03
+WS-MG,Carbohydrate metabolism ,9.92,0.29
+WS-MT-T0,Carbohydrate metabolism ,8.54,0.10
+WS-MT-T4,Carbohydrate metabolism ,8.61,0.01
+WS-MT-T24,Carbohydrate metabolism ,7.17,0.49
+WS-MG,Energy metabolism ,6.99,0.31
+WS-MT-T0,Energy metabolism ,6.62,0.37
+WS-MT-T4,Energy metabolism ,7.32,0.51
+WS-MT-T24,Energy metabolism ,6.49,1.87
+WS-MG,Glycan biosynthesis and metabolism ,2.01,0.10
+WS-MT-T0,Glycan biosynthesis and metabolism ,0.98,0.14
+WS-MT-T4,Glycan biosynthesis and metabolism ,0.94,0.06
+WS-MT-T24,Glycan biosynthesis and metabolism ,0.82,0.15
+WS-MG,Lipid metabolism ,2.16,0.06
+WS-MT-T0,Lipid metabolism ,2.74,0.01
+WS-MT-T4,Lipid metabolism ,2.19,0.22
+WS-MT-T24,Lipid metabolism ,2.11,0.41
+WS-MG,Metabolism of cofactors and vitamins ,6.58,0.35
+WS-MT-T0,Metabolism of cofactors and vitamins ,4.05,0.44
+WS-MT-T4,Metabolism of cofactors and vitamins ,3.90,0.11
+WS-MT-T24,Metabolism of cofactors and vitamins ,3.64,0.49
+WS-MG,Metabolism of terpenoids and polyketides ,1.50,0.07
+WS-MT-T0,Metabolism of terpenoids and polyketides ,0.72,0.08
+WS-MT-T4,Metabolism of terpenoids and polyketides ,0.72,0.02
+WS-MT-T24,Metabolism of terpenoids and polyketides ,0.67,0.09
+WS-MG,Nucleotide metabolism ,7.82,0.09
+WS-MT-T0,Nucleotide metabolism ,6.05,0.05
+WS-MT-T4,Nucleotide metabolism ,6.05,0.18
+WS-MT-T24,Nucleotide metabolism ,8.42,2.42
+WS-MG,Overview ,23.46,0.20
+WS-MT-T0,Overview ,27.08,1.40
+WS-MT-T4,Overview ,26.41,1.47
+WS-MT-T24,Overview ,21.86,3.14
+WS-MG,Biosynthesis of other secondary metabolites ,0.23,0.01
+WS-MT-T0,Biosynthesis of other secondary metabolites ,0.06,0.01
+WS-MT-T4,Biosynthesis of other secondary metabolites ,0.05,0.01
+WS-MT-T24,Biosynthesis of other secondary metabolites ,0.05,0.01
+WS-MG,Xenobiotics biodegradation and metabolism ,0.78,0.07
+WS-MT-T0,Xenobiotics biodegradation and metabolism ,1.28,0.12
+WS-MT-T4,Xenobiotics biodegradation and metabolism ,1.26,0.33
+WS-MT-T24,Xenobiotics biodegradation and metabolism ,0.70,0.20
+WS-MG,"Folding, sorting and degradation ",3.50,0.05
+WS-MT-T0,"Folding, sorting and degradation ",5.76,0.73
+WS-MT-T4,"Folding, sorting and degradation ",5.66,0.23
+WS-MT-T24,"Folding, sorting and degradation ",6.93,1.09
+WS-MG,Replication and repair ,4.43,0.20
+WS-MT-T0,Replication and repair ,2.09,0.24
+WS-MT-T4,Replication and repair ,2.03,0.02
+WS-MT-T24,Replication and repair ,1.95,0.18
+WS-MG,Transcription ,0.06,0.02
+WS-MT-T0,Transcription ,0.13,0.00
+WS-MT-T4,Transcription ,0.13,0.03
+WS-MT-T24,Transcription ,0.08,0.07
+WS-MG,Translation ,7.64,0.22
+WS-MT-T0,Translation ,11.67,0.18
+WS-MT-T4,Translation ,13.40,0.48
+WS-MT-T24,Translation ,17.69,3.71
+WS-MG,Membrane transport ,8.44,0.39
+WS-MT-T0,Membrane transport ,11.10,0.54
+WS-MT-T4,Membrane transport ,10.20,1.20
+WS-MT-T24,Membrane transport ,10.47,0.17
+WS-MG,Signal transduction ,4.34,0.14
+WS-MT-T0,Signal transduction ,3.35,0.84
+WS-MT-T4,Signal transduction ,3.77,0.11
+WS-MT-T24,Signal transduction ,2.91,0.52
+WS-MG,Signaling molecules and interaction ,0.02,0.00
+WS-MT-T0,Signaling molecules and interaction ,0.01,0.00
+WS-MT-T4,Signaling molecules and interaction ,0.01,0.00
+WS-MT-T24,Signaling molecules and interaction ,0.00,0.00
+WS-MG,Cellular community - prokaryotes ,2.01,0.23
+WS-MT-T0,Cellular community - prokaryotes ,2.55,0.14
+WS-MT-T4,Cellular community - prokaryotes ,2.23,0.37
+WS-MT-T24,Cellular community - prokaryotes ,2.31,0.09
+WS-MG,Cell growth and death ,1.22,0.04
+WS-MT-T0,Cell growth and death ,1.69,0.11
+WS-MT-T4,Cell growth and death ,1.80,0.17
+WS-MT-T24,Cell growth and death ,2.04,0.24
+WS-MG,Cell motility ,0.32,0.06
+WS-MT-T0,Cell motility ,0.10,0.00
+WS-MT-T4,Cell motility ,0.08,0.01
+WS-MT-T24,Cell motility ,0.10,0.02
+WS-MG,Transport and catabolism ,0.11,0.01
+WS-MT-T0,Transport and catabolism ,0.22,0.02
+WS-MT-T4,Transport and catabolism ,0.13,0.04
+WS-MT-T24,Transport and catabolism ,0.47,0.19

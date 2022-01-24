@@ -1,0 +1,13 @@
+Sample,Tier.II,Mean,SD
+WS-T0,Metabolism,680683,5257
+WS-T4,Metabolism,678361,4581
+WS-T24,Metabolism,678376,6230
+WS-T0,Genetic Information Processing,156635,3171
+WS-T4,Genetic Information Processing,156814,6238
+WS-T24,Genetic Information Processing,155374,4500
+WS-T0,Environmental Information Processing,126371,5403
+WS-T4,Environmental Information Processing,128342,5869
+WS-T24,Environmental Information Processing,129038,5784
+WS-T0,Cellular Processes,36311,3159
+WS-T4,Cellular Processes,36483,3921
+WS-T24,Cellular Processes,37213,4003

@@ -1,0 +1,47 @@
+Sample,Tier_III,Ratio
+Tuss-MT-T0,Amino acid metabolism ,-0.523471223
+WS-MT-T0,Amino acid metabolism ,-0.498793207
+Tuss-MT-T0,Metabolism of other amino acids ,-0.6075
+WS-MT-T0,Metabolism of other amino acids ,-0.52095972
+Tuss-MT-T0,Carbohydrate metabolism ,0.121546298
+WS-MT-T0,Carbohydrate metabolism ,-0.144048848
+Tuss-MT-T0,Energy metabolism ,-0.205461778
+WS-MT-T0,Energy metabolism ,-0.041627439
+Tuss-MT-T0,Glycan biosynthesis and metabolism ,-0.667936854
+WS-MT-T0,Glycan biosynthesis and metabolism ,-0.506520421
+Tuss-MT-T0,Lipid metabolism ,-0.46140028
+WS-MT-T0,Lipid metabolism ,0.280138202
+Tuss-MT-T0,Metabolism of cofactors and vitamins ,-0.3359967
+WS-MT-T0,Metabolism of cofactors and vitamins ,-0.386449659
+Tuss-MT-T0,Metabolism of terpenoids and polyketides ,-0.407594782
+WS-MT-T0,Metabolism of terpenoids and polyketides ,-0.515074196
+Tuss-MT-T0,Nucleotide metabolism ,-0.041243623
+WS-MT-T0,Nucleotide metabolism ,-0.231318172
+Tuss-MT-T0,Overview ,0.272429661
+WS-MT-T0,Overview ,0.146476536
+Tuss-MT-T0,Biosynthesis of other secondary metabolites ,-0.734224202
+WS-MT-T0,Biosynthesis of other secondary metabolites ,-0.729637527
+Tuss-MT-T0,Xenobiotics biodegradation and metabolism ,-0.324110374
+WS-MT-T0,Xenobiotics biodegradation and metabolism ,0.649163449
+Tuss-MT-T0,"Folding, sorting and degradation ",1.877471426
+WS-MT-T0,"Folding, sorting and degradation ",0.644038269
+Tuss-MT-T0,Replication and repair ,-0.621774543
+WS-MT-T0,Replication and repair ,-0.532918368
+Tuss-MT-T0,Transcription ,-0.090697674
+WS-MT-T0,Transcription ,1.292857143
+Tuss-MT-T0,Translation ,0.816118362
+WS-MT-T0,Translation ,0.530371595
+Tuss-MT-T0,Membrane transport ,-0.548203309
+WS-MT-T0,Membrane transport ,0.327504545
+Tuss-MT-T0,Signal transduction ,-0.29875146
+WS-MT-T0,Signal transduction ,-0.214220302
+Tuss-MT-T0,Signaling molecules and interaction ,-0.816901408
+WS-MT-T0,Signaling molecules and interaction ,-0.573863636
+Tuss-MT-T0,Cellular community - prokaryotes ,-0.538692845
+WS-MT-T0,Cellular community - prokaryotes ,0.280790649
+Tuss-MT-T0,Cell growth and death ,0.544189602
+WS-MT-T0,Cell growth and death ,0.376173757
+Tuss-MT-T0,Cell motility ,-0.744766275
+WS-MT-T0,Cell motility ,-0.670537492
+Tuss-MT-T0,Transport and catabolism ,-0.083704804
+WS-MT-T0,Transport and catabolism ,1.145914397

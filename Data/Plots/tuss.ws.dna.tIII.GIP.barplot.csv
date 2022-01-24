@@ -1,0 +1,9 @@
+Sample,Tier.II,Mean,SD
+Tuss-MG,"Folding, Sorting and Degradation",36711.33333,604.6666667
+WS-MG,"Folding, Sorting and Degradation",34979,454
+Tuss-MG,Replication and Repair,43792.33333,752.3333333
+WS-MG,Replication and Repair,44304,2251
+Tuss-MG,Transcription,808.6666667,384.3333333
+WS-MG,Transcription,578,190
+Tuss-MG,Translation,73539,820.3333333
+WS-MG,Translation,76413.66667,2287.666667

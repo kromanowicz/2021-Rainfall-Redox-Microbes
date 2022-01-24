@@ -1,0 +1,97 @@
+Species,Sample,Value
+Actinobacteria,Tuss-16S-T0,6.077179239
+Actinobacteria,Tuss-16S-T4,5.485696172
+Actinobacteria,Tuss-16S-T24,5.250287806
+Actinobacteria,WS-16S-T0,7.454364918
+Actinobacteria,WS-16S-T4,6.731369363
+Actinobacteria,WS-16S-T24,6.678897124
+Acidobacteria,Tuss-16S-T0,15.89775329
+Acidobacteria,Tuss-16S-T4,16.97095332
+Acidobacteria,Tuss-16S-T24,15.41647736
+Acidobacteria,WS-16S-T0,11.56050453
+Acidobacteria,WS-16S-T4,12.12041567
+Acidobacteria,WS-16S-T24,12.39123501
+Alphaproteobacteria,Tuss-16S-T0,13.30495903
+Alphaproteobacteria,Tuss-16S-T4,13.08984504
+Alphaproteobacteria,Tuss-16S-T24,14.42790775
+Alphaproteobacteria,WS-16S-T0,6.367968908
+Alphaproteobacteria,WS-16S-T4,5.763565755
+Alphaproteobacteria,WS-16S-T24,6.083151671
+Betaproteobacteria,Tuss-16S-T0,2.697855607
+Betaproteobacteria,Tuss-16S-T4,2.356346045
+Betaproteobacteria,Tuss-16S-T24,2.328075094
+Betaproteobacteria,WS-16S-T0,4.147782305
+Betaproteobacteria,WS-16S-T4,4.0463333
+Betaproteobacteria,WS-16S-T24,4.650597355
+Deltaproteobacteria,Tuss-16S-T0,5.381766931
+Deltaproteobacteria,Tuss-16S-T4,5.016765451
+Deltaproteobacteria,Tuss-16S-T24,5.009319535
+Deltaproteobacteria,WS-16S-T0,7.529177642
+Deltaproteobacteria,WS-16S-T4,8.202605635
+Deltaproteobacteria,WS-16S-T24,7.532014294
+Gammaproteobacteria,Tuss-16S-T0,5.773018394
+Gammaproteobacteria,Tuss-16S-T4,7.33017776
+Gammaproteobacteria,Tuss-16S-T24,6.951666411
+Gammaproteobacteria,WS-16S-T0,2.468177008
+Gammaproteobacteria,WS-16S-T4,3.16895359
+Gammaproteobacteria,WS-16S-T24,3.084403797
+Proteobacteria Unclassified,Tuss-16S-T0,3.356575698
+Proteobacteria Unclassified,Tuss-16S-T4,3.584413134
+Proteobacteria Unclassified,Tuss-16S-T24,3.654026799
+Proteobacteria Unclassified,WS-16S-T0,2.855686456
+Proteobacteria Unclassified,WS-16S-T4,2.776040542
+Proteobacteria Unclassified,WS-16S-T24,3.088319972
+Bacteroidetes,Tuss-16S-T0,4.081299134
+Bacteroidetes,Tuss-16S-T4,4.552575624
+Bacteroidetes,Tuss-16S-T24,5.043369447
+Bacteroidetes,WS-16S-T0,5.484197241
+Bacteroidetes,WS-16S-T4,5.824657284
+Bacteroidetes,WS-16S-T24,5.651010949
+Chloroflexi,Tuss-16S-T0,0.625199547
+Chloroflexi,Tuss-16S-T4,0.635892658
+Chloroflexi,Tuss-16S-T24,0.849351683
+Chloroflexi,WS-16S-T0,3.562171196
+Chloroflexi,WS-16S-T4,3.55667974
+Chloroflexi,WS-16S-T24,3.598194343
+Firmicutes,Tuss-16S-T0,0.158893833
+Firmicutes,Tuss-16S-T4,0.241703077
+Firmicutes,Tuss-16S-T24,0.059154096
+Firmicutes,WS-16S-T0,1.02322702
+Firmicutes,WS-16S-T4,1.272926108
+Firmicutes,WS-16S-T24,1.017958247
+Planctomycetes,Tuss-16S-T0,12.52695865
+Planctomycetes,Tuss-16S-T4,11.92175173
+Planctomycetes,Tuss-16S-T24,12.77293468
+Planctomycetes,WS-16S-T0,4.546394739
+Planctomycetes,WS-16S-T4,3.922408178
+Planctomycetes,WS-16S-T24,4.891544006
+Verrucomicrobia,Tuss-16S-T0,6.447999747
+Verrucomicrobia,Tuss-16S-T4,5.439319191
+Verrucomicrobia,Tuss-16S-T24,5.699764218
+Verrucomicrobia,WS-16S-T0,6.790228237
+Verrucomicrobia,WS-16S-T4,7.380756211
+Verrucomicrobia,WS-16S-T24,7.430147995
+Bacteria Unclassified,Tuss-16S-T0,15.17205007
+Bacteria Unclassified,Tuss-16S-T4,15.24842646
+Bacteria Unclassified,Tuss-16S-T24,13.6389228
+Bacteria Unclassified,WS-16S-T0,30.28961478
+Bacteria Unclassified,WS-16S-T4,29.21320104
+Bacteria Unclassified,WS-16S-T24,28.53504974
+Bacteria Other,Tuss-16S-T0,8.439099483
+Bacteria Other,Tuss-16S-T4,8.093803279
+Bacteria Other,Tuss-16S-T24,8.869165275
+Bacteria Other,WS-16S-T0,4.566875796
+Bacteria Other,WS-16S-T4,4.606760358
+Bacteria Other,WS-16S-T24,4.140606225
+Archaea,Tuss-16S-T0,0.059391346
+Archaea,Tuss-16S-T4,0.03233107
+Archaea,Tuss-16S-T24,0.029577048
+Archaea,WS-16S-T0,1.353629232
+Archaea,WS-16S-T4,1.413327228
+Archaea,WS-16S-T24,1.226869267
+Fungi,Tuss-16S-T0,0
+Fungi,Tuss-16S-T4,0
+Fungi,Tuss-16S-T24,0
+Fungi,WS-16S-T0,0
+Fungi,WS-16S-T4,0
+Fungi,WS-16S-T24,0

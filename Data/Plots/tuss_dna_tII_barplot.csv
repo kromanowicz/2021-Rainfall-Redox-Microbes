@@ -1,0 +1,13 @@
+Sample,Tier.II,Mean,SD
+Tuss-T0,Metabolism,696614,617
+Tuss-T4,Metabolism,693746,3604
+Tuss-T24,Metabolism,681864,12460
+Tuss-T0,Genetic Information Processing,153866,259
+Tuss-T4,Genetic Information Processing,154821,2526
+Tuss-T24,Genetic Information Processing,155865,1099
+Tuss-T0,Environmental Information Processing,104701,1102
+Tuss-T4,Environmental Information Processing,106418,405
+Tuss-T24,Environmental Information Processing,114794,9983
+Tuss-T0,Cellular Processes,44819,744
+Tuss-T4,Cellular Processes,45014,672
+Tuss-T24,Cellular Processes,47478,3576

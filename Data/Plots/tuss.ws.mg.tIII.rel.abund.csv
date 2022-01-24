@@ -1,0 +1,47 @@
+Sample,Tier_III,Mean,SD
+Tuss-MG,Amino acid metabolism ,5.56,0.0013
+WS-MG,Amino acid metabolism ,4.6404,0.1552
+Tuss-MG,Metabolism of other amino acids ,2.08,0.0179
+WS-MG,Metabolism of other amino acids ,1.8297,0.0323
+Tuss-MG,Carbohydrate metabolism ,11.6614,0.2318
+WS-MG,Carbohydrate metabolism ,9.9737,0.3188
+Tuss-MG,Energy metabolism ,6.5107,0.0317
+WS-MG,Energy metabolism ,6.9041,0.2496
+Tuss-MG,Glycan biosynthesis and metabolism ,2.0207,0.0214
+WS-MG,Glycan biosynthesis and metabolism ,1.9784,0.0888
+Tuss-MG,Lipid metabolism ,2.2824,0.0182
+WS-MG,Lipid metabolism ,2.1418,0.0581
+Tuss-MG,Metabolism of cofactors and vitamins ,6.5456,0.0456
+WS-MG,Metabolism of cofactors and vitamins ,6.605,0.3269
+Tuss-MG,Metabolism of terpenoids and polyketides ,1.6406,0.0294
+WS-MG,Metabolism of terpenoids and polyketides ,1.4893,0.0621
+Tuss-MG,Nucleotide metabolism ,8.0764,0.0114
+WS-MG,Nucleotide metabolism ,7.8753,0.073
+Tuss-MG,Overview ,21.6878,0.0974
+WS-MG,Overview ,23.6188,0.1471
+Tuss-MG,Biosynthesis of other secondary metabolites ,0.2694,0.004
+WS-MG,Biosynthesis of other secondary metabolites ,0.2345,0.0108
+Tuss-MG,Xenobiotics biodegradation and metabolism ,1.3264,0.0426
+WS-MG,Xenobiotics biodegradation and metabolism ,0.777,0.0609
+Tuss-MG,"Folding, sorting and degradation ",3.6922,0.0054
+WS-MG,"Folding, sorting and degradation ",3.5015,0.0304
+Tuss-MG,Replication and repair ,4.3831,0.0327
+WS-MG,Replication and repair ,4.4823,0.2029
+Tuss-MG,Transcription ,0.086,0.006
+WS-MG,Transcription ,0.056,0.0098
+Tuss-MG,Translation ,7.2253,0.0062
+WS-MG,Translation ,7.6239,0.0956
+Tuss-MG,Membrane transport ,6.0027,0.0836
+WS-MG,Membrane transport ,8.3608,0.3946
+Tuss-MG,Signal transduction ,4.4532,0.0262
+WS-MG,Signal transduction ,4.2587,0.1462
+Tuss-MG,Signaling molecules and interaction ,0.0142,0.0006
+WS-MG,Signaling molecules and interaction ,0.0176,0.002
+Tuss-MG,Cellular community - prokaryotes ,2.2614,0.0187
+WS-MG,Cellular community - prokaryotes ,1.9933,0.2126
+Tuss-MG,Cell growth and death ,1.308,0.004
+WS-MG,Cell growth and death ,1.2247,0.0467
+Tuss-MG,Cell motility ,0.6974,0.0462
+WS-MG,Cell motility ,0.3014,0.0635
+Tuss-MG,Transport and catabolism ,0.2019,0.0158
+WS-MG,Transport and catabolism ,0.1028,0.0028

@@ -1,0 +1,289 @@
+Species,Sample,Value
+Actinobacteria,Tuss1-16S-T0,6.868867083
+Actinobacteria,Tuss2-16S-T0,6.138790036
+Actinobacteria,Tuss3-16S-T0,5.223880597
+Actinobacteria,Tuss1-16S-T24,5.215231788
+Actinobacteria,Tuss2-16S-T24,5.856255546
+Actinobacteria,Tuss3-16S-T24,4.679376083
+Actinobacteria,Tuss1-16S-T4,5.599472991
+Actinobacteria,Tuss2-16S-T4,5.237633366
+Actinobacteria,Tuss3-16S-T4,5.619982159
+Actinobacteria,WS1-16S-T0,7.127071823
+Actinobacteria,WS2-16S-T0,8.86347391
+Actinobacteria,WS3-16S-T0,6.37254902
+Actinobacteria,WS1-16S-T24,6.586826347
+Actinobacteria,WS2-16S-T24,7.267221802
+Actinobacteria,WS3-16S-T24,6.182643222
+Actinobacteria,WS1-16S-T4,6.769230769
+Actinobacteria,WS2-16S-T4,6.911262799
+Actinobacteria,WS3-16S-T4,6.513614522
+Acidobacteria,Tuss1-16S-T0,17.93041927
+Acidobacteria,Tuss2-16S-T0,15.65836299
+Acidobacteria,Tuss3-16S-T0,14.10447761
+Acidobacteria,Tuss1-16S-T24,16.22516556
+Acidobacteria,Tuss2-16S-T24,16.59272405
+Acidobacteria,Tuss3-16S-T24,13.43154246
+Acidobacteria,Tuss1-16S-T4,16.07378129
+Acidobacteria,Tuss2-16S-T4,19.49563531
+Acidobacteria,Tuss3-16S-T4,15.34344335
+Acidobacteria,WS1-16S-T0,11.82320442
+Acidobacteria,WS2-16S-T0,11.43674053
+Acidobacteria,WS3-16S-T0,11.42156863
+Acidobacteria,WS1-16S-T24,12.1091151
+Acidobacteria,WS2-16S-T24,13.32323997
+Acidobacteria,WS3-16S-T24,11.74134997
+Acidobacteria,WS1-16S-T4,13.76923077
+Acidobacteria,WS2-16S-T4,11.4334471
+Acidobacteria,WS3-16S-T4,11.15856914
+Alphaproteobacteria,Tuss1-16S-T0,13.3809099
+Alphaproteobacteria,Tuss2-16S-T0,14.14590747
+Alphaproteobacteria,Tuss3-16S-T0,12.3880597
+Alphaproteobacteria,Tuss1-16S-T24,13.99006623
+Alphaproteobacteria,Tuss2-16S-T24,14.99556344
+Alphaproteobacteria,Tuss3-16S-T24,14.29809359
+Alphaproteobacteria,Tuss1-16S-T4,13.57048748
+Alphaproteobacteria,Tuss2-16S-T4,12.31813773
+Alphaproteobacteria,Tuss3-16S-T4,13.3809099
+Alphaproteobacteria,WS1-16S-T0,6.132596685
+Alphaproteobacteria,WS2-16S-T0,4.932094353
+Alphaproteobacteria,WS3-16S-T0,8.039215686
+Alphaproteobacteria,WS1-16S-T24,5.123087159
+Alphaproteobacteria,WS2-16S-T24,5.071915216
+Alphaproteobacteria,WS3-16S-T24,8.054452638
+Alphaproteobacteria,WS1-16S-T4,5.923076923
+Alphaproteobacteria,WS2-16S-T4,3.839590444
+Alphaproteobacteria,WS3-16S-T4,7.528029899
+Betaproteobacteria,Tuss1-16S-T0,2.140945584
+Betaproteobacteria,Tuss2-16S-T0,2.669039146
+Betaproteobacteria,Tuss3-16S-T0,3.28358209
+Betaproteobacteria,Tuss1-16S-T24,1.986754967
+Betaproteobacteria,Tuss2-16S-T24,2.48447205
+Betaproteobacteria,Tuss3-16S-T24,2.512998267
+Betaproteobacteria,Tuss1-16S-T4,2.437417655
+Betaproteobacteria,Tuss2-16S-T4,2.13385063
+Betaproteobacteria,Tuss3-16S-T4,2.497769848
+Betaproteobacteria,WS1-16S-T0,3.867403315
+Betaproteobacteria,WS2-16S-T0,4.360257327
+Betaproteobacteria,WS3-16S-T0,4.215686275
+Betaproteobacteria,WS1-16S-T24,4.058549568
+Betaproteobacteria,WS2-16S-T24,5.071915216
+Betaproteobacteria,WS3-16S-T24,4.821327283
+Betaproteobacteria,WS1-16S-T4,4.230769231
+Betaproteobacteria,WS2-16S-T4,3.583617747
+Betaproteobacteria,WS3-16S-T4,4.32461292
+Deltaproteobacteria,Tuss1-16S-T0,4.727921499
+Deltaproteobacteria,Tuss2-16S-T0,4.62633452
+Deltaproteobacteria,Tuss3-16S-T0,6.791044776
+Deltaproteobacteria,Tuss1-16S-T24,3.642384106
+Deltaproteobacteria,Tuss2-16S-T24,5.146406389
+Deltaproteobacteria,Tuss3-16S-T24,6.239168111
+Deltaproteobacteria,Tuss1-16S-T4,4.150197628
+Deltaproteobacteria,Tuss2-16S-T4,4.655674103
+Deltaproteobacteria,Tuss3-16S-T4,6.244424621
+Deltaproteobacteria,WS1-16S-T0,8.011049724
+Deltaproteobacteria,WS2-16S-T0,7.076483202
+Deltaproteobacteria,WS3-16S-T0,7.5
+Deltaproteobacteria,WS1-16S-T24,7.917498337
+Deltaproteobacteria,WS2-16S-T24,6.964420893
+Deltaproteobacteria,WS3-16S-T24,7.714123653
+Deltaproteobacteria,WS1-16S-T4,8.461538462
+Deltaproteobacteria,WS2-16S-T4,8.19112628
+Deltaproteobacteria,WS3-16S-T4,7.955152162
+Gammaproteobacteria,Tuss1-16S-T0,5.887600357
+Gammaproteobacteria,Tuss2-16S-T0,7.028469751
+Gammaproteobacteria,Tuss3-16S-T0,4.402985075
+Gammaproteobacteria,Tuss1-16S-T24,7.781456954
+Gammaproteobacteria,Tuss2-16S-T24,6.921029281
+Gammaproteobacteria,Tuss3-16S-T24,6.152512998
+Gammaproteobacteria,Tuss1-16S-T4,8.102766798
+Gammaproteobacteria,Tuss2-16S-T4,8.535402522
+Gammaproteobacteria,Tuss3-16S-T4,5.352363961
+Gammaproteobacteria,WS1-16S-T0,2.596685083
+Gammaproteobacteria,WS2-16S-T0,1.572551823
+Gammaproteobacteria,WS3-16S-T0,3.235294118
+Gammaproteobacteria,WS1-16S-T24,2.727877578
+Gammaproteobacteria,WS2-16S-T24,2.498107494
+Gammaproteobacteria,WS3-16S-T24,4.027226319
+Gammaproteobacteria,WS1-16S-T4,3.230769231
+Gammaproteobacteria,WS2-16S-T4,2.218430034
+Gammaproteobacteria,WS3-16S-T4,4.057661506
+Proteobacteria Unclassified,Tuss1-16S-T0,3.835860839
+Proteobacteria Unclassified,Tuss2-16S-T0,3.024911032
+Proteobacteria Unclassified,Tuss3-16S-T0,3.208955224
+Proteobacteria Unclassified,Tuss1-16S-T24,3.228476821
+Proteobacteria Unclassified,Tuss2-16S-T24,4.614019521
+Proteobacteria Unclassified,Tuss3-16S-T24,3.119584055
+Proteobacteria Unclassified,Tuss1-16S-T4,3.557312253
+Proteobacteria Unclassified,Tuss2-16S-T4,4.07371484
+Proteobacteria Unclassified,Tuss3-16S-T4,3.12221231
+Proteobacteria Unclassified,WS1-16S-T0,2.817679558
+Proteobacteria Unclassified,WS2-16S-T0,2.072909221
+Proteobacteria Unclassified,WS3-16S-T0,3.676470588
+Proteobacteria Unclassified,WS1-16S-T24,3.193612774
+Proteobacteria Unclassified,WS2-16S-T24,2.271006813
+Proteobacteria Unclassified,WS3-16S-T24,3.800340329
+Proteobacteria Unclassified,WS1-16S-T4,3.076923077
+Proteobacteria Unclassified,WS2-16S-T4,2.04778157
+Proteobacteria Unclassified,WS3-16S-T4,3.203416978
+Bacteroidetes,Tuss1-16S-T0,3.300624442
+Bacteroidetes,Tuss2-16S-T0,4.09252669
+Bacteroidetes,Tuss3-16S-T0,4.850746269
+Bacteroidetes,Tuss1-16S-T24,3.311258278
+Bacteroidetes,Tuss2-16S-T24,5.146406389
+Bacteroidetes,Tuss3-16S-T24,6.672443674
+Bacteroidetes,Tuss1-16S-T4,4.216073781
+Bacteroidetes,Tuss2-16S-T4,4.267701261
+Bacteroidetes,Tuss3-16S-T4,5.173951829
+Bacteroidetes,WS1-16S-T0,5.027624309
+Bacteroidetes,WS2-16S-T0,6.719085061
+Bacteroidetes,WS3-16S-T0,4.705882353
+Bacteroidetes,WS1-16S-T24,6.453759148
+Bacteroidetes,WS2-16S-T24,6.131718395
+Bacteroidetes,WS3-16S-T24,4.367555303
+Bacteroidetes,WS1-16S-T4,6.076923077
+Bacteroidetes,WS2-16S-T4,6.058020478
+Bacteroidetes,WS3-16S-T4,5.339028297
+Chloroflexi,Tuss1-16S-T0,0.535236396
+Chloroflexi,Tuss2-16S-T0,0.444839858
+Chloroflexi,Tuss3-16S-T0,0.895522388
+Chloroflexi,Tuss1-16S-T24,1.324503311
+Chloroflexi,Tuss2-16S-T24,0.443655723
+Chloroflexi,Tuss3-16S-T24,0.779896014
+Chloroflexi,Tuss1-16S-T4,0.724637681
+Chloroflexi,Tuss2-16S-T4,0.290979631
+Chloroflexi,Tuss3-16S-T4,0.89206066
+Chloroflexi,WS1-16S-T0,3.701657459
+Chloroflexi,WS2-16S-T0,4.288777698
+Chloroflexi,WS3-16S-T0,2.696078431
+Chloroflexi,WS1-16S-T24,4.191616766
+Chloroflexi,WS2-16S-T24,4.617713853
+Chloroflexi,WS3-16S-T24,1.985252411
+Chloroflexi,WS1-16S-T4,3.307692308
+Chloroflexi,WS2-16S-T4,4.692832765
+Chloroflexi,WS3-16S-T4,2.669514148
+Firmicutes,Tuss1-16S-T0,0.089206066
+Firmicutes,Tuss2-16S-T0,0.088967972
+Firmicutes,Tuss3-16S-T0,0.298507463
+Firmicutes,Tuss1-16S-T24,0
+Firmicutes,Tuss2-16S-T24,0.177462289
+Firmicutes,Tuss3-16S-T24,0
+Firmicutes,Tuss1-16S-T4,0.263504611
+Firmicutes,Tuss2-16S-T4,0.193986421
+Firmicutes,Tuss3-16S-T4,0.267618198
+Firmicutes,WS1-16S-T0,1.104972376
+Firmicutes,WS2-16S-T0,1.572551823
+Firmicutes,WS3-16S-T0,0.392156863
+Firmicutes,WS1-16S-T24,1.596806387
+Firmicutes,WS2-16S-T24,1.286903861
+Firmicutes,WS3-16S-T24,0.170164492
+Firmicutes,WS1-16S-T4,1.076923077
+Firmicutes,WS2-16S-T4,2.04778157
+Firmicutes,WS3-16S-T4,0.694073679
+Planctomycetes,Tuss1-16S-T0,12.04281891
+Planctomycetes,Tuss2-16S-T0,13.52313167
+Planctomycetes,Tuss3-16S-T0,12.01492537
+Planctomycetes,Tuss1-16S-T24,14.56953642
+Planctomycetes,Tuss2-16S-T24,11.35758651
+Planctomycetes,Tuss3-16S-T24,12.39168111
+Planctomycetes,Tuss1-16S-T4,11.26482213
+Planctomycetes,Tuss2-16S-T4,11.83317168
+Planctomycetes,Tuss3-16S-T4,12.66726137
+Planctomycetes,WS1-16S-T0,3.20441989
+Planctomycetes,WS2-16S-T0,2.787705504
+Planctomycetes,WS3-16S-T0,7.647058824
+Planctomycetes,WS1-16S-T24,3.592814371
+Planctomycetes,WS2-16S-T24,2.34670704
+Planctomycetes,WS3-16S-T24,8.735110607
+Planctomycetes,WS1-16S-T4,2.769230769
+Planctomycetes,WS2-16S-T4,3.071672355
+Planctomycetes,WS3-16S-T4,5.92632141
+Verrucomicrobia,Tuss1-16S-T0,5.263157895
+Verrucomicrobia,Tuss2-16S-T0,5.871886121
+Verrucomicrobia,Tuss3-16S-T0,8.208955224
+Verrucomicrobia,Tuss1-16S-T24,5.629139073
+Verrucomicrobia,Tuss2-16S-T24,5.057675244
+Verrucomicrobia,Tuss3-16S-T24,6.412478336
+Verrucomicrobia,Tuss1-16S-T4,4.87483531
+Verrucomicrobia,Tuss2-16S-T4,4.752667313
+Verrucomicrobia,Tuss3-16S-T4,6.690454951
+Verrucomicrobia,WS1-16S-T0,7.513812155
+Verrucomicrobia,WS2-16S-T0,5.50393138
+Verrucomicrobia,WS3-16S-T0,7.352941176
+Verrucomicrobia,WS1-16S-T24,7.252162342
+Verrucomicrobia,WS2-16S-T24,7.494322483
+Verrucomicrobia,WS3-16S-T24,7.543959161
+Verrucomicrobia,WS1-16S-T4,6.923076923
+Verrucomicrobia,WS2-16S-T4,6.56996587
+Verrucomicrobia,WS3-16S-T4,8.649225841
+Bacteria Unclassified,Tuss1-16S-T0,15.07582516
+Bacteria Unclassified,Tuss2-16S-T0,14.76868327
+Bacteria Unclassified,Tuss3-16S-T0,15.67164179
+Bacteria Unclassified,Tuss1-16S-T24,13.90728477
+Bacteria Unclassified,Tuss2-16S-T24,13.66459627
+Bacteria Unclassified,Tuss3-16S-T24,13.34488735
+Bacteria Unclassified,Tuss1-16S-T4,16.00790514
+Bacteria Unclassified,Tuss2-16S-T4,14.8399612
+Bacteria Unclassified,Tuss3-16S-T4,14.89741302
+Bacteria Unclassified,WS1-16S-T0,31.10497238
+Bacteria Unclassified,WS2-16S-T0,32.16583274
+Bacteria Unclassified,WS3-16S-T0,27.59803922
+Bacteria Unclassified,WS1-16S-T24,28.60944777
+Bacteria Unclassified,WS2-16S-T24,30.05299016
+Bacteria Unclassified,WS3-16S-T24,26.94271129
+Bacteria Unclassified,WS1-16S-T4,28.30769231
+Bacteria Unclassified,WS2-16S-T4,32.42320819
+Bacteria Unclassified,WS3-16S-T4,26.90870262
+Bacteria Other,Tuss1-16S-T0,8.831400535
+Bacteria Other,Tuss2-16S-T0,7.829181495
+Bacteria Other,Tuss3-16S-T0,8.656716418
+Bacteria Other,Tuss1-16S-T24,9.188741722
+Bacteria Other,Tuss2-16S-T24,7.453416149
+Bacteria Other,Tuss3-16S-T24,9.965337955
+Bacteria Other,Tuss1-16S-T4,9.156785244
+Bacteria Other,Tuss2-16S-T4,7.274490786
+Bacteria Other,Tuss3-16S-T4,7.850133809
+Bacteria Other,WS1-16S-T0,4.53038674
+Bacteria Other,WS2-16S-T0,5.003573981
+Bacteria Other,WS3-16S-T0,4.166666667
+Bacteria Other,WS1-16S-T24,4.457751164
+Bacteria Other,WS2-16S-T24,4.390613172
+Bacteria Other,WS3-16S-T24,3.573454339
+Bacteria Other,WS1-16S-T4,4.461538462
+Bacteria Other,WS2-16S-T4,5.034129693
+Bacteria Other,WS3-16S-T4,4.32461292
+Archaea,Tuss1-16S-T0,0.089206066
+Archaea,Tuss2-16S-T0,0.088967972
+Archaea,Tuss3-16S-T0,0
+Archaea,Tuss1-16S-T24,0
+Archaea,Tuss2-16S-T24,0.088731145
+Archaea,Tuss3-16S-T24,0
+Archaea,Tuss1-16S-T4,0
+Archaea,Tuss2-16S-T4,0.09699321
+Archaea,Tuss3-16S-T4,0
+Archaea,WS1-16S-T0,1.436464088
+Archaea,WS2-16S-T0,1.644031451
+Archaea,WS3-16S-T0,0.980392157
+Archaea,WS1-16S-T24,2.129075183
+Archaea,WS2-16S-T24,1.211203634
+Archaea,WS3-16S-T24,0.340328985
+Archaea,WS1-16S-T4,1.615384615
+Archaea,WS2-16S-T4,1.877133106
+Archaea,WS3-16S-T4,0.747463962
+Fungi,Tuss1-16S-T0,0
+Fungi,Tuss2-16S-T0,0
+Fungi,Tuss3-16S-T0,0
+Fungi,Tuss1-16S-T24,0
+Fungi,Tuss2-16S-T24,0
+Fungi,Tuss3-16S-T24,0
+Fungi,Tuss1-16S-T4,0
+Fungi,Tuss2-16S-T4,0
+Fungi,Tuss3-16S-T4,0
+Fungi,WS1-16S-T0,0
+Fungi,WS2-16S-T0,0
+Fungi,WS3-16S-T0,0
+Fungi,WS1-16S-T24,0
+Fungi,WS2-16S-T24,0
+Fungi,WS3-16S-T24,0
+Fungi,WS1-16S-T4,0
+Fungi,WS2-16S-T4,0
+Fungi,WS3-16S-T4,0

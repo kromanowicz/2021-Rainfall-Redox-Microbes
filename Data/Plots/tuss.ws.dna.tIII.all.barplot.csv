@@ -1,0 +1,45 @@
+Sample,Tier.III,Mean,SD
+Tuss-MG,Amino acid metabolism ,55301,1484.261769
+Tuss-MG,Metabolism of other amino acids ,21023.33333,245.3759021
+Tuss-MG,Carbohydrate metabolism ,112409.6667,5757.122053
+Tuss-MG,Energy metabolism ,66151.33333,1557.904469
+Tuss-MG,Glycan biosynthesis and metabolism ,20562.33333,1010.019967
+Tuss-MG,Lipid metabolism ,22575,837.72967
+Tuss-MG,Metabolism of cofactors and vitamins ,64962.66667,2070.557735
+Tuss-MG,Metabolism of terpenoids and polyketides ,16078.66667,563.497412
+Tuss-MG,Nucleotide metabolism ,80504.66667,489.5562617
+Tuss-MG,Biosynthesis of other secondary metabolites ,2701,73.74957627
+Tuss-MG,Xenobiotics biodegradation and metabolism ,12644,629.1931341
+Tuss-MG,"Folding, sorting and degradation ",36711.33333,439.6422788
+Tuss-MG,Replication and repair ,43792.33333,585.9576208
+Tuss-MG,Transcription ,808.6666667,80.40729652
+Tuss-MG,Translation ,73539,1356.253295
+Tuss-MG,Membrane transport ,62646.33333,4177.528496
+Tuss-MG,Signal transduction ,45877,1357.159165
+Tuss-MG,Signaling molecules and interaction ,113.6666667,29.56912804
+Tuss-MG,Cellular community - prokaryotes ,22573.66667,218.3124672
+Tuss-MG,Cell growth and death ,13616.33333,673.3471121
+Tuss-MG,Cell motility ,7449.333333,934.5465924
+Tuss-MG,Transport and catabolism ,1984.333333,288.5659948
+WS-MG,Amino acid metabolism ,46304,384.870108
+WS-MG,Metabolism of other amino acids ,18462.33333,179.3469635
+WS-MG,Carbohydrate metabolism ,99217.33333,500.2822537
+WS-MG,Energy metabolism ,69922,817.473547
+WS-MG,Glycan biosynthesis and metabolism ,20065,386.6794538
+WS-MG,Lipid metabolism ,21555.66667,323.2867664
+WS-MG,Metabolism of cofactors and vitamins ,65766.66667,503.7939394
+WS-MG,Metabolism of terpenoids and polyketides ,14999.33333,141.5497557
+WS-MG,Nucleotide metabolism ,78160,518.3695593
+WS-MG,Biosynthesis of other secondary metabolites ,2303,36.49657518
+WS-MG,Xenobiotics biodegradation and metabolism ,7767.333333,203.0131359
+WS-MG,"Folding, sorting and degradation ",34979,211.3125647
+WS-MG,Replication and repair ,44304,492.9776871
+WS-MG,Transcription ,578,41.07310556
+WS-MG,Translation ,76413.66667,309.4855947
+WS-MG,Membrane transport ,84367.33333,842.0904544
+WS-MG,Signal transduction ,43368,697.5249099
+WS-MG,Signaling molecules and interaction ,181.6666667,8.96288644
+WS-MG,Cellular community - prokaryotes ,20102.66667,414.4228919
+WS-MG,Cell growth and death ,12230,15.71623365
+WS-MG,Cell motility ,3195,161.4094173
+WS-MG,Transport and catabolism ,1050,23.64318084

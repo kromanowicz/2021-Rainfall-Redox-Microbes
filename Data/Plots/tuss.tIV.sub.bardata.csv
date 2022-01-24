@@ -1,0 +1,28 @@
+Sample,Tier.IV,Mean,SD
+Tuss-MT-T0,Carbon metabolism (K01200),18.6254057,2.684963469
+Tuss-MT-T0,Ribosome (K03010),12.04804471,2.495399426
+Tuss-MT-T0,RNA degradation (K03018),8.357050103,0.048613692
+Tuss-MT-T0,Fatty acid metabolism (K01212),4.428800155,0.072850788
+Tuss-MT-T0,Butanoate metabolism (K006650),3.203552176,1.025671978
+Tuss-MT-T0,Glycolysis-Gluconeogenesis (K00010),2.874050582,0.274440335
+Tuss-MT-T0,Cell cycle - Caulobacter (K04112),1.921150183,0.086204467
+Tuss-MT-T0,Nicotinate and nicotinamide metabolism (K00760),1.339650783,0.369186134
+Tuss-MT-T0,Degradation of aromatic compounds (K01220),1.372100212,0.099707877
+Tuss-MT-T4,Carbon metabolism (K01200),7.129082973,0.750253542
+Tuss-MT-T4,Ribosome (K03010),19.28284935,2.298474652
+Tuss-MT-T4,RNA degradation (K03018),23.3775899,1.565975882
+Tuss-MT-T4,Fatty acid metabolism (K01212),1.185296928,0.102527713
+Tuss-MT-T4,Butanoate metabolism (K006650),0.602098496,0.001132645
+Tuss-MT-T4,Glycolysis-Gluconeogenesis (K00010),0.598998383,0.112428426
+Tuss-MT-T4,Cell cycle - Caulobacter (K04112),6.81358379,0.776840022
+Tuss-MT-T4,Nicotinate and nicotinamide metabolism (K00760),0.295949272,0.011385019
+Tuss-MT-T4,Degradation of aromatic compounds (K01220),0.584948578,0.037689938
+Tuss-MT-T24,Carbon metabolism (K01200),7.443776782,2.607211288
+Tuss-MT-T24,Ribosome (K03010),23.41919082,0.356793101
+Tuss-MT-T24,RNA degradation (K03018),19.75819912,0.842021505
+Tuss-MT-T24,Fatty acid metabolism (K01212),1.190596437,0.332052305
+Tuss-MT-T24,Butanoate metabolism (K006650),0.56249792,0.381410456
+Tuss-MT-T24,Glycolysis-Gluconeogenesis (K00010),0.754697243,0.492283842
+Tuss-MT-T24,Cell cycle - Caulobacter (K04112),3.542640213,0.526285736
+Tuss-MT-T24,Nicotinate and nicotinamide metabolism (K00760),0.331449,0.097084346
+Tuss-MT-T24,Degradation of aromatic compounds (K01220),0.500898396,0.198836159

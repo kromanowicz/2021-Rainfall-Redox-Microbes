@@ -1,0 +1,17 @@
+Sample,Iron,Mean,SD
+Tuss-MG,Iron Oxidation,12.69158376,0
+Tuss-MT-T0,Iron Oxidation,4.997847925,0.677668338
+Tuss-MT-T4,Iron Oxidation,12.92393598,2.152527544
+Tuss-MT-T24,Iron Oxidation,7.022038873,2.006190062
+Tuss-MG,Iron Reduction,0.053777897,0
+Tuss-MT-T0,Iron Reduction,0.088339223,0.124930527
+Tuss-MT-T4,Iron Reduction,0.233710398,0.066177431
+Tuss-MT-T24,Iron Reduction,0.250820137,0.049925834
+Tuss-MG,Siderophore Transport,37.10674913,0
+Tuss-MT-T0,Siderophore Transport,52.42646497,3.931261781
+Tuss-MT-T4,Siderophore Transport,50.10446842,4.213852578
+Tuss-MT-T24,Siderophore Transport,56.83673721,6.011157618
+Tuss-MG,Iron Storage,38.50497446,0
+Tuss-MT-T0,Iron Storage,40.20961908,1.85235891
+Tuss-MT-T4,Iron Storage,35.52266978,2.126946352
+Tuss-MT-T24,Iron Storage,34.95772902,7.557550371

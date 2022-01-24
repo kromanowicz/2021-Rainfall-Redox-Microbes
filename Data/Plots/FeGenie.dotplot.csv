@@ -1,0 +1,6 @@
+X,Tuss-T0-rep1,Tuss-T0-rep2,Tuss-T4-rep1,Tuss-T4-rep2,Tuss-T24-reo1,Tuss-T24-rep2,WS-T0-rep1,WS-T0-rep2,WS-T4-rep1,WS-T4-rep2,WS-T24-rep1,WS-T24-rep2
+iron_storage,198,235,264,182,187,207,236,238,350,321,189,124
+iron_aquisition-siderophore_transport,281,281,336,284,244,427,148,195,285,260,113,187
+iron_aquisition-iron_transport,2,8,6,4,0,2,8,4,6,4,4,2
+iron_reduction,0,1,2,1,1,2,117,141,137,109,82,56
+iron_oxidation,23,31,103,61,26,59,30,30,52,29,13,11

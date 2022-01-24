@@ -1,0 +1,241 @@
+Species,Sample,Value
+Acidobacteria,Tuss1-MG-T0,31.33942329
+Acidobacteria,Tuss2-MG-T0,33.08311575
+Acidobacteria,Tuss1-MG-T4,41.69121191
+Acidobacteria,Tuss2-MG-T4,37.38736337
+Acidobacteria,Tuss1-MG-T24,35.14414176
+Acidobacteria,Tuss3-MG-T24,27.31249386
+Acidobacteria,WS1-MG-T0,9.87513507
+Acidobacteria,WS2-MG-T0,8.258072498
+Acidobacteria,WS3-MG-T0,10.91413062
+Acidobacteria,WS1-MG-T4,10.06293189
+Acidobacteria,WS2-MG-T4,8.697123519
+Acidobacteria,WS3-MG-T4,11.57285048
+Acidobacteria,WS1-MG-T24,9.796247266
+Acidobacteria,WS2-MG-T24,8.833725393
+Acidobacteria,WS3-MG-T24,12.35326998
+Actinobacteria,Tuss1-MG-T0,29.64450803
+Actinobacteria,Tuss2-MG-T0,30.29264578
+Actinobacteria,Tuss1-MG-T4,15.94816045
+Actinobacteria,Tuss2-MG-T4,22.23407091
+Actinobacteria,Tuss1-MG-T24,23.65511769
+Actinobacteria,Tuss3-MG-T24,19.22736656
+Actinobacteria,WS1-MG-T0,24.87693601
+Actinobacteria,WS2-MG-T0,34.41172832
+Actinobacteria,WS3-MG-T0,27.25067852
+Actinobacteria,WS1-MG-T4,27.023692
+Actinobacteria,WS2-MG-T4,27.02199662
+Actinobacteria,WS3-MG-T4,22.26283529
+Actinobacteria,WS1-MG-T24,22.82145735
+Actinobacteria,WS2-MG-T24,31.31732079
+Actinobacteria,WS3-MG-T24,23.2588038
+Alphaproteobacteria,Tuss1-MG-T0,12.35417125
+Alphaproteobacteria,Tuss2-MG-T0,12.05939948
+Alphaproteobacteria,Tuss1-MG-T4,14.2826541
+Alphaproteobacteria,Tuss2-MG-T4,14.55078646
+Alphaproteobacteria,Tuss1-MG-T24,14.7315525
+Alphaproteobacteria,Tuss3-MG-T24,23.79337462
+Alphaproteobacteria,WS1-MG-T0,7.726017529
+Alphaproteobacteria,WS2-MG-T0,4.181615737
+Alphaproteobacteria,WS3-MG-T0,11.25483629
+Alphaproteobacteria,WS1-MG-T4,7.144619941
+Alphaproteobacteria,WS2-MG-T4,4.399323181
+Alphaproteobacteria,WS3-MG-T4,12.84372716
+Alphaproteobacteria,WS1-MG-T24,6.388856913
+Alphaproteobacteria,WS2-MG-T24,5.472328835
+Alphaproteobacteria,WS3-MG-T24,15.10340973
+Betaproteobacteria,Tuss1-MG-T0,1.595861765
+Betaproteobacteria,Tuss2-MG-T0,1.501305483
+Betaproteobacteria,Tuss1-MG-T4,1.488780592
+Betaproteobacteria,Tuss2-MG-T4,1.471607571
+Betaproteobacteria,Tuss1-MG-T24,1.623909019
+Betaproteobacteria,Tuss3-MG-T24,4.300599626
+Betaproteobacteria,WS1-MG-T0,5.708968664
+Betaproteobacteria,WS2-MG-T0,3.031052827
+Betaproteobacteria,WS3-MG-T0,8.63313507
+Betaproteobacteria,WS1-MG-T4,5.157946693
+Betaproteobacteria,WS2-MG-T4,3.463056966
+Betaproteobacteria,WS3-MG-T4,10.1501434
+Betaproteobacteria,WS1-MG-T24,5.076551168
+Betaproteobacteria,WS2-MG-T24,4.933762536
+Betaproteobacteria,WS3-MG-T24,11.39183902
+Deltaproteobacteria,Tuss1-MG-T0,4.039181158
+Deltaproteobacteria,Tuss2-MG-T0,3.671671018
+Deltaproteobacteria,Tuss1-MG-T4,4.032560381
+Deltaproteobacteria,Tuss2-MG-T4,3.663023194
+Deltaproteobacteria,Tuss1-MG-T24,3.485850304
+Deltaproteobacteria,Tuss3-MG-T24,5.632556768
+Deltaproteobacteria,WS1-MG-T0,13.77716413
+Deltaproteobacteria,WS2-MG-T0,12.3469009
+Deltaproteobacteria,WS3-MG-T0,11.09892014
+Deltaproteobacteria,WS1-MG-T4,13.80182626
+Deltaproteobacteria,WS2-MG-T4,15.09306261
+Deltaproteobacteria,WS3-MG-T4,10.52690772
+Deltaproteobacteria,WS1-MG-T24,14.52745482
+Deltaproteobacteria,WS2-MG-T24,12.60987991
+Deltaproteobacteria,WS3-MG-T24,10.94466182
+Gammaproteobacteria,Tuss1-MG-T0,10.79132732
+Gammaproteobacteria,Tuss2-MG-T0,10.23716275
+Gammaproteobacteria,Tuss1-MG-T4,10.38933219
+Gammaproteobacteria,Tuss2-MG-T4,11.84217542
+Gammaproteobacteria,Tuss1-MG-T24,10.82782333
+Gammaproteobacteria,Tuss3-MG-T24,11.3388381
+Gammaproteobacteria,WS1-MG-T0,1.560811622
+Gammaproteobacteria,WS2-MG-T0,0.841271805
+Gammaproteobacteria,WS3-MG-T0,1.974937922
+Gammaproteobacteria,WS1-MG-T4,1.665844028
+Gammaproteobacteria,WS2-MG-T4,1.026508742
+Gammaproteobacteria,WS3-MG-T4,3.047854693
+Gammaproteobacteria,WS1-MG-T24,1.35835156
+Gammaproteobacteria,WS2-MG-T24,1.114275102
+Gammaproteobacteria,WS3-MG-T24,2.325321409
+Proteobacteria Unclassified,Tuss1-MG-T0,0.027514858
+Proteobacteria Unclassified,Tuss2-MG-T0,0
+Proteobacteria Unclassified,Tuss1-MG-T4,0.026776629
+Proteobacteria Unclassified,Tuss2-MG-T4,0
+Proteobacteria Unclassified,Tuss1-MG-T24,0.010579212
+Proteobacteria Unclassified,Tuss3-MG-T24,0
+Proteobacteria Unclassified,WS1-MG-T0,0.030015608
+Proteobacteria Unclassified,WS2-MG-T0,0.012371644
+Proteobacteria Unclassified,WS3-MG-T0,0.040422706
+Proteobacteria Unclassified,WS1-MG-T4,0.018509378
+Proteobacteria Unclassified,WS2-MG-T4,0.005640158
+Proteobacteria Unclassified,WS3-MG-T4,0.028116741
+Proteobacteria Unclassified,WS1-MG-T24,0
+Proteobacteria Unclassified,WS2-MG-T24,0
+Proteobacteria Unclassified,WS3-MG-T24,0.016769145
+Bacteroidetes,Tuss1-MG-T0,0.396213956
+Bacteroidetes,Tuss2-MG-T0,0.310052219
+Bacteroidetes,Tuss1-MG-T4,0.669415734
+Bacteroidetes,Tuss2-MG-T4,0.218608371
+Bacteroidetes,Tuss1-MG-T24,0.423168474
+Bacteroidetes,Tuss3-MG-T24,0.319473115
+Bacteroidetes,WS1-MG-T0,1.560811622
+Bacteroidetes,WS2-MG-T0,1.367066683
+Bacteroidetes,WS3-MG-T0,0.854651499
+Bacteroidetes,WS1-MG-T4,1.721372162
+Bacteroidetes,WS2-MG-T4,4.545967287
+Bacteroidetes,WS3-MG-T4,1.563290783
+Bacteroidetes,WS1-MG-T24,3.447680442
+Bacteroidetes,WS2-MG-T24,1.405224712
+Bacteroidetes,WS3-MG-T24,0.519843488
+Chloroflexi,Tuss1-MG-T0,0.253136694
+Chloroflexi,Tuss2-MG-T0,0.22845953
+Chloroflexi,Tuss1-MG-T4,0.176725754
+Chloroflexi,Tuss2-MG-T4,0.186616902
+Chloroflexi,Tuss1-MG-T24,0.269769902
+Chloroflexi,Tuss3-MG-T24,0.378452767
+Chloroflexi,WS1-MG-T0,7.605955097
+Chloroflexi,WS2-MG-T0,8.814796486
+Chloroflexi,WS3-MG-T0,7.541722007
+Chloroflexi,WS1-MG-T4,7.823297137
+Chloroflexi,WS2-MG-T4,9.137055838
+Chloroflexi,WS3-MG-T4,8.378788731
+Chloroflexi,WS1-MG-T24,9.94014044
+Chloroflexi,WS2-MG-T24,8.276587842
+Chloroflexi,WS3-MG-T24,7.065399665
+Firmicutes,Tuss1-MG-T0,3.857583095
+Firmicutes,Tuss2-MG-T0,3.105961706
+Firmicutes,Tuss1-MG-T4,4.498473732
+Firmicutes,Tuss2-MG-T4,3.588376433
+Firmicutes,Tuss1-MG-T24,3.432954245
+Firmicutes,Tuss3-MG-T24,2.595104689
+Firmicutes,WS1-MG-T0,17.77524313
+Firmicutes,WS2-MG-T0,19.1203761
+Firmicutes,WS3-MG-T0,13.09118208
+Firmicutes,WS1-MG-T4,16.04146101
+Firmicutes,WS2-MG-T4,15.8714044
+Firmicutes,WS3-MG-T4,9.660912107
+Firmicutes,WS1-MG-T24,14.86128698
+Firmicutes,WS2-MG-T24,17.30221617
+Firmicutes,WS3-MG-T24,9.502515372
+Planctomycetes,Tuss1-MG-T0,1.034558662
+Planctomycetes,Tuss2-MG-T0,1.125979112
+Planctomycetes,Tuss1-MG-T4,0.926471376
+Planctomycetes,Tuss2-MG-T4,1.167688616
+Planctomycetes,Tuss1-MG-T24,1.036762761
+Planctomycetes,Tuss3-MG-T24,0.791310331
+Planctomycetes,WS1-MG-T0,0.078040581
+Planctomycetes,WS2-MG-T0,0.049486577
+Planctomycetes,WS3-MG-T0,0.092394757
+Planctomycetes,WS1-MG-T4,0.098716683
+Planctomycetes,WS2-MG-T4,0.152284264
+Planctomycetes,WS3-MG-T4,0.202440533
+Planctomycetes,WS1-MG-T24,0.097847358
+Planctomycetes,WS2-MG-T24,0.11142751
+Planctomycetes,WS3-MG-T24,0.245947457
+Verrucomicrobia,Tuss1-MG-T0,2.426810478
+Verrucomicrobia,Tuss2-MG-T0,2.072454308
+Verrucomicrobia,Tuss1-MG-T4,2.452739249
+Verrucomicrobia,Tuss2-MG-T4,2.026126366
+Verrucomicrobia,Tuss1-MG-T24,2.285109759
+Verrucomicrobia,Tuss3-MG-T24,3.170156296
+Verrucomicrobia,WS1-MG-T0,2.227158122
+Verrucomicrobia,WS2-MG-T0,0.989731535
+Verrucomicrobia,WS3-MG-T0,2.425362361
+Verrucomicrobia,WS1-MG-T4,2.085389931
+Verrucomicrobia,WS2-MG-T4,1.33107727
+Verrucomicrobia,WS3-MG-T4,4.740482483
+Verrucomicrobia,WS1-MG-T24,2.65914585
+Verrucomicrobia,WS2-MG-T24,1.34332054
+Verrucomicrobia,WS3-MG-T24,3.750698714
+Bacteria Unclassified,Tuss1-MG-T0,0
+Bacteria Unclassified,Tuss2-MG-T0,0
+Bacteria Unclassified,Tuss1-MG-T4,0
+Bacteria Unclassified,Tuss2-MG-T4,0
+Bacteria Unclassified,Tuss1-MG-T24,0
+Bacteria Unclassified,Tuss3-MG-T24,0
+Bacteria Unclassified,WS1-MG-T0,0
+Bacteria Unclassified,WS2-MG-T0,0
+Bacteria Unclassified,WS3-MG-T0,0
+Bacteria Unclassified,WS1-MG-T4,0
+Bacteria Unclassified,WS2-MG-T4,0
+Bacteria Unclassified,WS3-MG-T4,0
+Bacteria Unclassified,WS1-MG-T24,0
+Bacteria Unclassified,WS2-MG-T24,0
+Bacteria Unclassified,WS3-MG-T24,0
+Bacteria Other,Tuss1-MG-T0,1.177635923
+Bacteria Other,Tuss2-MG-T0,0.875761532
+Bacteria Other,Tuss1-MG-T4,1.25850158
+Bacteria Other,Tuss2-MG-T4,1.066382298
+Bacteria Other,Tuss1-MG-T24,1.385876752
+Bacteria Other,Tuss3-MG-T24,0.978079229
+Bacteria Other,WS1-MG-T0,5.03061592
+Bacteria Other,WS2-MG-T0,4.39811951
+Bacteria Other,WS3-MG-T0,3.817058382
+Bacteria Other,WS1-MG-T4,4.534797631
+Bacteria Other,WS2-MG-T4,5.172024817
+Bacteria Other,WS3-MG-T4,4.048810662
+Bacteria Other,WS1-MG-T24,5.226200069
+Bacteria Other,WS2-MG-T24,5.323758821
+Bacteria Other,WS3-MG-T24,3.225265511
+Archaea,Tuss1-MG-T0,0.016508915
+Archaea,Tuss2-MG-T0,0.02175805
+Archaea,Tuss1-MG-T4,0
+Archaea,Tuss2-MG-T4,0.010663823
+Archaea,Tuss1-MG-T24,0.010579212
+Archaea,Tuss3-MG-T24,0
+Archaea,WS1-MG-T0,2.095089447
+Archaea,WS2-MG-T0,2.078436224
+Archaea,WS3-MG-T0,0.923947566
+Archaea,WS1-MG-T4,2.776406713
+Archaea,WS2-MG-T4,4.004512126
+Archaea,WS3-MG-T4,0.927852443
+Archaea,WS1-MG-T24,3.729711063
+Archaea,WS2-MG-T24,1.875696422
+Archaea,WS3-MG-T24,0.240357742
+Fungi,Tuss1-MG-T0,1.045564605
+Fungi,Tuss2-MG-T0,1.414273281
+Fungi,Tuss1-MG-T4,2.158196326
+Fungi,Tuss2-MG-T4,0.586510264
+Fungi,Tuss1-MG-T24,1.676805078
+Fungi,Tuss3-MG-T24,0.162194043
+Fungi,WS1-MG-T0,0.072037459
+Fungi,WS2-MG-T0,0.098973154
+Fungi,WS3-MG-T0,0.086620084
+Fungi,WS1-MG-T4,0.043188549
+Fungi,WS2-MG-T4,0.078962211
+Fungi,WS3-MG-T4,0.044986785
+Fungi,WS1-MG-T24,0.069068723
+Fungi,WS2-MG-T24,0.080475424
+Fungi,WS3-MG-T24,0.055897149

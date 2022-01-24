@@ -1,0 +1,33 @@
+Species,Sample,Value
+Acidobacteria,Tuss-MT,40.92722049
+Acidobacteria,WS-MT,8.137366493
+Actinobacteria,Tuss-MT,41.76046188
+Actinobacteria,WS-MT,39.56814398
+Alphaproteobacteria,Tuss-MT,4.494417505
+Alphaproteobacteria,WS-MT,3.367938347
+Betaproteobacteria,Tuss-MT,1.007952993
+Betaproteobacteria,WS-MT,3.516788073
+Deltaproteobacteria,Tuss-MT,2.883818264
+Deltaproteobacteria,WS-MT,12.57463525
+Gammaproteobacteria,Tuss-MT,3.498443026
+Gammaproteobacteria,WS-MT,1.259713182
+Proteobacteria Unclassified,Tuss-MT,0.001025566
+Proteobacteria Unclassified,WS-MT,0.030639763
+Bacteroidetes,Tuss-MT,0.697038282
+Bacteroidetes,WS-MT,1.717359731
+Chloroflexi,Tuss-MT,0.177037729
+Chloroflexi,WS-MT,8.281687576
+Firmicutes,Tuss-MT,1.657733304
+Firmicutes,WS-MT,10.31912076
+Planctomycetes,Tuss-MT,0.398500518
+Planctomycetes,WS-MT,0.060912877
+Verrucomicrobia,Tuss-MT,0.4441635
+Verrucomicrobia,WS-MT,0.743738815
+Bacteria Unclassified,Tuss-MT,0
+Bacteria Unclassified,WS-MT,0
+Bacteria Other,Tuss-MT,0.477137845
+Bacteria Other,WS-MT,3.4727607
+Archaea,Tuss-MT,0.089993424
+Archaea,WS-MT,6.846740004
+Fungi,Tuss-MT,1.485055678
+Fungi,WS-MT,0.102454441

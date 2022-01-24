@@ -1,0 +1,25 @@
+Sample,Tier.II,Mean,SD
+Tuss-MG,Amino Acids,55301,1210.666667
+WS-MG,Amino Acids,46304,1779.666667
+Tuss-MG,Carbohydrates,21023.33333,346
+WS-MG,Carbohydrates,18462.33333,350.3333333
+Tuss-MG,Cofactors/ Vitamins,112409.6667,4924.333333
+WS-MG,Cofactors/ Vitamins,99217.33333,3293
+Tuss-MG,Energy,66151.33333,1052.666667
+WS-MG,Energy,69922,3373.333333
+Tuss-MG,Glycan Biosynthesis,20562.33333,447.6666667
+WS-MG,Glycan Biosynthesis,20065,1074.666667
+Tuss-MG,Lipids,22575,807.3333333
+WS-MG,Lipids,21555.66667,602.6666667
+Tuss-MG,Nucleotides,64962.66667,1275
+WS-MG,Nucleotides,65766.66667,3937.333333
+Tuss-MG,Other Amino Acids,16078.66667,505.6666667
+WS-MG,Other Amino Acids,14999.33333,758.6666667
+Tuss-MG,Overview,80504.66667,430
+WS-MG,Overview,78160,862.3333333
+Tuss-MG,Secondary Metabolites,215826.6667,2622.333333
+WS-MG,Secondary Metabolites,234615.6667,1782.666667
+Tuss-MG,Terpenoids/ Polyketides,2701,114.3333333
+WS-MG,Terpenoids/ Polyketides,2303,134
+Tuss-MG,Xenobiotics Degradation,12644,480.6666667
+WS-MG,Xenobiotics Degradation,7767.333333,825.6666667

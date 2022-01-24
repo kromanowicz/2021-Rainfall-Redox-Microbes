@@ -1,0 +1,49 @@
+Species,Sample,Value
+Acidobacteria,WS-MG-T0,9.682446064
+Acidobacteria,WS-MG-T4,10.11096863
+Acidobacteria,WS-MG-T24,10.32774755
+Actinobacteria,WS-MG-T0,28.84644762
+Actinobacteria,WS-MG-T4,25.43617464
+Actinobacteria,WS-MG-T24,25.79919398
+Alphaproteobacteria,WS-MG-T0,7.720823185
+Alphaproteobacteria,WS-MG-T4,8.129223426
+Alphaproteobacteria,WS-MG-T24,8.988198491
+Betaproteobacteria,WS-MG-T0,5.791052187
+Betaproteobacteria,WS-MG-T4,6.257049018
+Betaproteobacteria,WS-MG-T24,7.134050907
+Deltaproteobacteria,WS-MG-T0,12.40766172
+Deltaproteobacteria,WS-MG-T4,13.14059886
+Deltaproteobacteria,WS-MG-T24,12.69399885
+Gammaproteobacteria,WS-MG-T0,1.459007116
+Gammaproteobacteria,WS-MG-T4,1.913402488
+Gammaproteobacteria,WS-MG-T24,1.599316024
+Proteobacteria Unclassified,WS-MG-T0,0.027603319
+Proteobacteria Unclassified,WS-MG-T4,0.017422092
+Proteobacteria Unclassified,WS-MG-T24,0.005589715
+Bacteroidetes,WS-MG-T0,1.260843268
+Bacteroidetes,WS-MG-T4,2.610210077
+Bacteroidetes,WS-MG-T24,1.790916214
+Chloroflexi,WS-MG-T0,7.987491197
+Chloroflexi,WS-MG-T4,8.446380569
+Chloroflexi,WS-MG-T24,8.427375982
+Firmicutes,WS-MG-T0,16.6622671
+Firmicutes,WS-MG-T4,13.85792584
+Firmicutes,WS-MG-T24,13.88867284
+Planctomycetes,WS-MG-T0,0.073307305
+Planctomycetes,WS-MG-T4,0.15114716
+Planctomycetes,WS-MG-T24,0.151740775
+Verrucomicrobia,WS-MG-T0,1.880750673
+Verrucomicrobia,WS-MG-T4,2.718983228
+Verrucomicrobia,WS-MG-T24,2.584388368
+Bacteria Unclassified,WS-MG-T0,0
+Bacteria Unclassified,WS-MG-T4,0
+Bacteria Unclassified,WS-MG-T24,0
+Bacteria Other,WS-MG-T0,4.415264604
+Bacteria Other,WS-MG-T4,4.585211036
+Bacteria Other,WS-MG-T24,4.591741467
+Archaea,WS-MG-T0,1.699157746
+Archaea,WS-MG-T4,2.569590427
+Archaea,WS-MG-T24,1.948588409
+Fungi,WS-MG-T0,0.085876899
+Fungi,WS-MG-T4,0.055712515
+Fungi,WS-MG-T24,0.068480432

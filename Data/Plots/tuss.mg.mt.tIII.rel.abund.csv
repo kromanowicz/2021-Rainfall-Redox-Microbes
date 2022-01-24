@@ -1,0 +1,93 @@
+Sample,Tier_III,Mean,SD
+Tuss-MG,Amino acid metabolism ,5.53,0.20
+Tuss-MT-T0,Amino acid metabolism ,2.65,0.14
+Tuss-MT-T4,Amino acid metabolism ,2.10,0.25
+Tuss-MT-T24,Amino acid metabolism ,1.74,0.09
+Tuss-MG,Metabolism of other amino acids ,2.10,0.04
+Tuss-MT-T0,Metabolism of other amino acids ,0.82,0.04
+Tuss-MT-T4,Metabolism of other amino acids ,0.85,0.18
+Tuss-MT-T24,Metabolism of other amino acids ,0.81,0.05
+Tuss-MG,Carbohydrate metabolism ,11.24,0.70
+Tuss-MT-T0,Carbohydrate metabolism ,13.08,1.39
+Tuss-MT-T4,Carbohydrate metabolism ,4.55,0.19
+Tuss-MT-T24,Carbohydrate metabolism ,5.00,0.89
+Tuss-MG,Energy metabolism ,6.62,0.17
+Tuss-MT-T0,Energy metabolism ,5.17,0.11
+Tuss-MT-T4,Energy metabolism ,3.68,0.93
+Tuss-MT-T24,Energy metabolism ,3.51,0.08
+Tuss-MG,Glycan biosynthesis and metabolism ,2.06,0.10
+Tuss-MT-T0,Glycan biosynthesis and metabolism ,0.67,0.11
+Tuss-MT-T4,Glycan biosynthesis and metabolism ,0.52,0.08
+Tuss-MT-T24,Glycan biosynthesis and metabolism ,0.53,0.09
+Tuss-MG,Lipid metabolism ,2.26,0.12
+Tuss-MT-T0,Lipid metabolism ,1.23,0.11
+Tuss-MT-T4,Lipid metabolism ,0.81,0.19
+Tuss-MT-T24,Lipid metabolism ,0.86,0.13
+Tuss-MG,Metabolism of cofactors and vitamins ,6.50,0.22
+Tuss-MT-T0,Metabolism of cofactors and vitamins ,4.35,0.36
+Tuss-MT-T4,Metabolism of cofactors and vitamins ,2.92,0.32
+Tuss-MT-T24,Metabolism of cofactors and vitamins ,2.62,0.16
+Tuss-MG,Metabolism of terpenoids and polyketides ,1.61,0.07
+Tuss-MT-T0,Metabolism of terpenoids and polyketides ,0.97,0.03
+Tuss-MT-T4,Metabolism of terpenoids and polyketides ,0.90,0.10
+Tuss-MT-T24,Metabolism of terpenoids and polyketides ,0.79,0.08
+Tuss-MG,Nucleotide metabolism ,8.05,0.06
+Tuss-MT-T0,Nucleotide metabolism ,7.74,1.21
+Tuss-MT-T4,Nucleotide metabolism ,9.62,0.72
+Tuss-MT-T24,Nucleotide metabolism ,10.89,1.04
+Tuss-MG,Overview ,21.58,0.38
+Tuss-MT-T0,Overview ,27.60,2.60
+Tuss-MT-T4,Overview ,11.85,1.01
+Tuss-MT-T24,Overview ,12.93,1.79
+Tuss-MG,Biosynthesis of other secondary metabolites ,0.27,0.01
+Tuss-MT-T0,Biosynthesis of other secondary metabolites ,0.07,0.00
+Tuss-MT-T4,Biosynthesis of other secondary metabolites ,0.05,0.01
+Tuss-MT-T24,Biosynthesis of other secondary metabolites ,0.04,0.00
+Tuss-MG,Xenobiotics biodegradation and metabolism ,1.26,0.07
+Tuss-MT-T0,Xenobiotics biodegradation and metabolism ,0.90,0.02
+Tuss-MT-T4,Xenobiotics biodegradation and metabolism ,0.38,0.05
+Tuss-MT-T24,Xenobiotics biodegradation and metabolism ,0.35,0.02
+Tuss-MG,"Folding, sorting and degradation ",3.67,0.07
+Tuss-MT-T0,"Folding, sorting and degradation ",10.62,0.08
+Tuss-MT-T4,"Folding, sorting and degradation ",27.25,2.13
+Tuss-MT-T24,"Folding, sorting and degradation ",22.90,0.37
+Tuss-MG,Replication and repair ,4.38,0.09
+Tuss-MT-T0,Replication and repair ,1.66,0.09
+Tuss-MT-T4,Replication and repair ,1.38,0.21
+Tuss-MT-T24,Replication and repair ,1.42,0.03
+Tuss-MG,Transcription ,0.08,0.04
+Tuss-MT-T0,Transcription ,0.08,0.03
+Tuss-MT-T4,Transcription ,0.22,0.02
+Tuss-MT-T24,Transcription ,0.09,0.07
+Tuss-MG,Translation ,7.35,0.15
+Tuss-MT-T0,Translation ,13.12,2.62
+Tuss-MT-T4,Translation ,20.52,2.14
+Tuss-MT-T24,Translation ,24.42,0.43
+Tuss-MG,Membrane transport ,6.26,0.55
+Tuss-MT-T0,Membrane transport ,2.71,0.15
+Tuss-MT-T4,Membrane transport ,1.73,0.42
+Tuss-MT-T24,Membrane transport ,2.78,1.10
+Tuss-MG,Signal transduction ,4.59,0.14
+Tuss-MT-T0,Signal transduction ,3.12,0.27
+Tuss-MT-T4,Signal transduction ,2.40,0.10
+Tuss-MT-T24,Signal transduction ,2.97,1.20
+Tuss-MG,Signaling molecules and interaction ,0.01,0.00
+Tuss-MT-T0,Signaling molecules and interaction ,0.00,0.00
+Tuss-MT-T4,Signaling molecules and interaction ,0.00,0.00
+Tuss-MT-T24,Signaling molecules and interaction ,0.01,0.01
+Tuss-MG,Cellular community - prokaryotes ,2.26,0.04
+Tuss-MT-T0,Cellular community - prokaryotes ,1.04,0.07
+Tuss-MT-T4,Cellular community - prokaryotes ,0.80,0.18
+Tuss-MT-T24,Cellular community - prokaryotes ,1.13,0.55
+Tuss-MG,Cell growth and death ,1.36,0.07
+Tuss-MT-T0,Cell growth and death ,2.02,0.06
+Tuss-MT-T4,Cell growth and death ,6.99,0.78
+Tuss-MT-T24,Cell growth and death ,3.66,0.51
+Tuss-MG,Cell motility ,0.74,0.17
+Tuss-MT-T0,Cell motility ,0.18,0.04
+Tuss-MT-T4,Cell motility ,0.08,0.00
+Tuss-MT-T24,Cell motility ,0.29,0.33
+Tuss-MG,Transport and catabolism ,0.20,0.07
+Tuss-MT-T0,Transport and catabolism ,0.19,0.03
+Tuss-MT-T4,Transport and catabolism ,0.35,0.02
+Tuss-MT-T24,Transport and catabolism ,0.21,0.12

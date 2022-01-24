@@ -1,0 +1,49 @@
+Sample,Tier_IV,Ratio
+Tuss-MT-T0,ABC transporters [PATH:ko02010],-0.54
+WS-MT-T0,ABC transporters [PATH:ko02010],0.36
+Tuss-MT-T0,Biosynthesis of amino acids [PATH:ko01230],-0.58
+WS-MT-T0,Biosynthesis of amino acids [PATH:ko01230],-0.35
+Tuss-MT-T0,Oxidative phosphorylation [PATH:ko00190],-0.09
+WS-MT-T0,Oxidative phosphorylation [PATH:ko00190],-0.08
+Tuss-MT-T0,Two-component system [PATH:ko02020],-0.33
+WS-MT-T0,Two-component system [PATH:ko02020],-0.23
+Tuss-MT-T0,Nucleotide excision repair [PATH:ko03420],-0.71
+WS-MT-T0,Nucleotide excision repair [PATH:ko03420],-0.68
+Tuss-MT-T0,Bacterial secretion system [PATH:ko03070],-0.57
+WS-MT-T0,Bacterial secretion system [PATH:ko03070],-0.15
+Tuss-MT-T0,Starch and sucrose metabolism [PATH:ko00500],-0.58
+WS-MT-T0,Starch and sucrose metabolism [PATH:ko00500],-0.37
+Tuss-MT-T0,2-Oxocarboxylic acid metabolism [PATH:ko01210],-0.54
+WS-MT-T0,2-Oxocarboxylic acid metabolism [PATH:ko01210],-0.32
+Tuss-MT-T0,Fatty acid metabolism [PATH:ko01212],1.66
+WS-MT-T0,Fatty acid metabolism [PATH:ko01212],-0.16
+Tuss-MT-T0,Amino sugar and nucleotide sugar metabolism [PATH:ko00520],-0.59
+WS-MT-T0,Amino sugar and nucleotide sugar metabolism [PATH:ko00520],-0.46
+Tuss-MT-T0,RNA degradation [PATH:ko03018],4.53
+WS-MT-T0,RNA degradation [PATH:ko03018],0.76
+Tuss-MT-T0,Degradation of aromatic compounds [PATH:ko01220],0.13
+WS-MT-T0,Degradation of aromatic compounds [PATH:ko01220],0.04
+Tuss-MT-T0,Galactose metabolism [PATH:ko00052],-0.63
+WS-MT-T0,Galactose metabolism [PATH:ko00052],-0.57
+Tuss-MT-T0,Butanoate metabolism [PATH:ko00650],2.47
+WS-MT-T0,Butanoate metabolism [PATH:ko00650],0.06
+Tuss-MT-T0,Fructose and mannose metabolism [PATH:ko00051],-0.62
+WS-MT-T0,Fructose and mannose metabolism [PATH:ko00051],-0.38
+Tuss-MT-T0,Glycolysis / Gluconeogenesis [PATH:ko00010],3.12
+WS-MT-T0,Glycolysis / Gluconeogenesis [PATH:ko00010],2.33
+Tuss-MT-T0,Pentose phosphate pathway [PATH:ko00030],0.22
+WS-MT-T0,Pentose phosphate pathway [PATH:ko00030],-0.48
+Tuss-MT-T0,Glyoxylate and dicarboxylate metabolism [PATH:ko00630],-0.54
+WS-MT-T0,Glyoxylate and dicarboxylate metabolism [PATH:ko00630],-0.33
+Tuss-MT-T0,Fatty acid degradation [PATH:ko00071],-0.67
+WS-MT-T0,Fatty acid degradation [PATH:ko00071],-0.58
+Tuss-MT-T0,Lysine degradation [PATH:ko00310],-0.61
+WS-MT-T0,Lysine degradation [PATH:ko00310],-0.46
+Tuss-MT-T0,Benzoate degradation [PATH:ko00362],-0.63
+WS-MT-T0,Benzoate degradation [PATH:ko00362],-0.63
+Tuss-MT-T0,Sulfur metabolism [PATH:ko00920],-0.59
+WS-MT-T0,Sulfur metabolism [PATH:ko00920],-0.04
+Tuss-MT-T0,Nitrogen metabolism [PATH:ko00910],-0.25
+WS-MT-T0,Nitrogen metabolism [PATH:ko00910],-0.15
+Tuss-MT-T0,Methane metabolism [PATH:ko00680],-0.63
+WS-MT-T0,Methane metabolism [PATH:ko00680],1.35
