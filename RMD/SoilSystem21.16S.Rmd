@@ -1,0 +1,1008 @@
+---
+title: "Microbial Response to Rainfall -- Geochemistry and 16S Analysis"
+author: 'Authors: [Karl J. Romanowicz](https://lsa.umich.edu/eeb/people/graduate-students/kjromano.html),
+  Byron C. Crump, George W. Kling'
+output:
+  html_notebook:
+    theme: spacelab
+    toc: yes
+    toc_depth: 5
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+  html_document:
+    toc: yes
+    toc_depth: '5'
+    df_print: paged
+  pdf_document:
+    toc: yes
+    toc_depth: '5'
+---
+
+__________________________________________________
+
+**R Notebook:** Provides reproducible analysis for geochemistry and 16S rRNA data in the following manuscript:
+
+**Citation:** Romanowicz, KJ, Crump, BC, Kling, GW. (2021) Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the arctic. Soil Systems 5(1): 17. [https://doi.org/10.3390/soilsystems5010017](https://doi.org/10.3390/soilsystems5010017)
+
+**GitHub Repository:** [https://github.com/kromanowicz/2021-Romanowicz-SoilSystems](https://github.com/kromanowicz/2021-Romanowicz-SoilSystems)
+
+**NCBI BioProject:** [https://www.ncbi.nlm.nih.gov/bioproject/PRJNA666429](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA666429)
+
+**Accepted for Publication:** *Soil Systems* 10 March 2021
+
+# Experiment
+
+This R Notebook provides complete reproducibility of the data analysis in ***"Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the Arctic "*** by Romanowicz, Crump, and Kling. In this experiment, mesocosms containing soil from the active layer of two dominant tundra types were subjected to simulated rainfall to alter redox conditions.  The microbial functional potential (metagenomics) and gene expression (metatranscriptomics) patterns were measured during saturated anoxic redox conditions prior to rainfall and at multiple time points following the simulated rainfall event. Other measurements include soil properties as well as microbial respiration (CO~2~) and methane (CH~4~) production from soil subsamples collected at each sampling time point. The purpose was to determine if rainfall, as a form of soil oxidation, is sufficient to alter the anoxic redox conditions in arctic tundra and enhance the microbial degradation of organic carbon and CH~4~ to CO~2~.
+
+<!-- Display Figure 1 -->
+![](R.Images/Concept1.png)
+**Conceptual Figure.**  A total of 12 tundra mesocosms (3 replicates x 2 tundra types x 2 sets of response cores) were acclimated initially under anoxic redox conditions to mimic field conditions (T0).  Dissolved oxygen was supplied to soils through the downward flow of oxygenated water during a simulated rainfall event.  Dissolved oxygen will likely change the redox gradient directly following rainfall (T4) as a short-term effect.  Anoxic conditions will likely be re-established after 24 hours (T24) as the pulse of oxygen is consumed through abiotic and biotic soil processes.  Under anoxic redox conditions (T0), microorganisms likely degrade organic carbon through anaerobic and fermentation pathways, producing CH~4~ and reducing Fe(III) to Fe(II).  Rainfall-induced soil oxidation (T4) should stimulate heterotrophic microorganisms that degrade organic carbon and CH~4~ through aerobic metabolic pathways, releasing CO~2~. Soil oxidation should also stimulate aerobic autotrophic iron oxidizing bacteria that oxidize Fe(II) to Fe(III) and convert CO~2~ into microbial biomass.  The long-term response (T24) will likely be a combination of aerobic and anaerobic metabolism as well as a combination of reduction and oxidation iron reactions as dissolved oxygen is consumed.  The predicted redox conditions and predicted redox reactions for coupled Fe(II)/Fe(III) cycling, as well as the microbial-induced release of CO~2~ or CH~4~ at each time point are based on the predicted availability of dissolved oxygen entering tundra soils through simulated rainfall.
+
+<font color="blue">**Soil Sampling for Microbial Gene Expression**</font>
+
+An initial soil sampling event for microbial activity was conducted at the end of the anoxic acclimation period (4-7 days) in all mesocosm replicates, representing sampling time point **T0**.  Mesocosms were then flushed to simulate a rainfall event.  Additional soil sampling events were conducted at **T4** (4-hrs) and **T24** (24-hrs) following the rainfall event to determine the temporal extent of microbial gene expression.  Soil cores (2.54 cm diameter, 30 cm length) were extracted in duplicate from each mesocosm replicate at each sampling time point and homogenized by depth in 10-cm increments.  The 10-20 cm soil increment, composed of organic soil in all mesocosm replicates, was chosen for microbial gene expression analysis and preserved in RNAlater Stabilization Reagent in sterile tubes at 4&deg;C for 18 hours and then stored at -80&deg;C until extraction.
+
+![](R.Images/Buckets.png)
+
+**Field Experiment.** Tundra soil cores were collected from field sites in August 2017 (top left) and placed in buckets to establish the mesocosm experiment (bottom left).  Tussock tundra cores were composed of an organic soil layer overlying a mineral soil layer (top middle) while wet sedge tundra cores were composed entirely of organic soil (bottom middle).  Soil subsampling for microbial activity was taken from the 10-20 cm depth of duplicate soil cores in Tussock (top right) and Wet Sedge (bottom right).
+
+```{r echo=FALSE}
+# Set global options for notebook
+knitr::opts_knit$set(root.dir = normalizePath("~/Desktop/RainSim2017"))
+knitr::opts_chunk$set(fig.width=10, fig.height=8, warning=FALSE, message=FALSE)
+```
+
+```{r message=FALSE, results='hide', warning=FALSE}
+# Make a vector of required packages
+required.packages <- c("ape","cowplot","data.table","devtools","dplyr","DT","ggplot2","ggpubr","gridExtra","kableExtra","knitr","pheatmap","png","RColorBrewer","reshape","rstatix","statmod","stringr","tibble","tidyr","tidyverse","vegan","yaml")
+
+# Load required packages
+lapply(required.packages, library, character.only = TRUE)
+```
+
+# Geochemistry
+
+Properties of bulk soil cores from tussock tundra and wet sedge tundra mesocosms measured at the end of the anoxic acclimation period (mean (SD), N=6).  Soil moisture was quantified as the volumetric water content of the soils.
+
+```{r echo=FALSE, warning=FALSE}
+soil.geochemistry<-read.csv("Table.Data/geochemistry.csv")
+soil.geochemistry
+```
+
+```{r echo=FALSE}
+soil.chem.t.test<-read.csv("Stats.Data/soil.chem.t.test.csv")
+```
+
+Run pairwise comparisons between tundra ecosystems for each geochemical characteristic to determine significance.
+```{r}
+soil.chem.t.test.stats <- soil.chem.t.test %>%
+  group_by(Chemistry) %>%
+  pairwise_t_test(
+    Value ~ Tundra, paired = TRUE,
+    ) %>%
+  select(-.y., -n1, -n2, -df, -statistic, -p) # Remove details
+soil.chem.t.test.stats
+```
+
+```{r echo=FALSE, eval=FALSE}
+soil.chem.O2.accum.t.test<-read.csv("Stats.Data/soil.chem.O2.accum.t.test.csv")
+O2.accum.t.test <- t.test(O2.Accum~Tundra, data=soil.chem.O2.accum.t.test)
+O2.accum.t.test
+```
+
+# 16S Amplicons
+
+## 1. 16S Sequencing
+
+Extracted DNA underwent 16S PCR amplification using the [Earth Microbiome Project](https://www.earthmicrobiome.org/protocols-and-standards/16s/) primers 515F (Parada) - 806R (Apprill) using standard reagents and thermal cycler conditions as recommended by the EMP protocols.  16S amplicons were sequenced on the Illumina MiSeq platform (Nano kit: 150bp paired-end reads) at the University of Michigan Microbiome Core.
+
+## 2. 16S Bioinformatics
+
+### 2.1. Raw Reads
+
+***Prep the Raw Reads***
+
+Transfer all paired .FASTQ files to a working directory in the Advanced Research Computing Great Lakes Cluster (ARC-GLC) at the University of Michigan.  Load the MOTHUR module to begin processing the raw sequencing reads.
+
+````markdown
+`r ''`{Terminal}
+cd /2017_Redox/16S_Mothur
+module load mothur/1.43.0
+mothur
+````
+
+***Create Stability File***
+
+Create a stability file in the FASTQ directory using the mothur command `make.file`.
+The first column is the name of the sample. The second column is the name of the forward read for that sample and the third column is the name of the reverse read for that sample.
+
+````markdown
+`r ''`{Mothur}
+make.file(inputdir=FASTQ)
+
+### Output
+Setting input directory to: FASTQ/
+
+Output File Names: 
+FASTQ/stability.files
+````
+
+***Reducing Sequencing and PCR Errors***
+
+The first step is to combine the two sets of reads for each sample and then combine the data from all of the samples.  Use the `make.contigs` command, which requires the **stability.files** as input.  This command extracts the sequence and quality score data from the fastq files, creates the reverse complement of the reverse read and then joins the reads into contigs.
+
+````markdown
+`r ''`{Mothur}
+make.contigs(file=stability.files)
+
+### Output
+Group count: 
+NegCTRL	41
+PosCTRL	9832
+TussT0Rep1	17781
+TussT0Rep2	19061
+TussT0Rep3	19203
+TussT24Rep1	18430
+TussT24Rep2	20757
+TussT24Rep3	15982
+TussT4Rep1	34830
+TussT4Rep2	18128
+TussT4Rep3	18654
+WST0Rep1	29954
+WST0Rep2	17977
+WST0Rep3	17744
+WST24Rep1	16938
+WST24Rep2	17368
+WST24Rep3	14282
+WST4Rep1	13252
+WST4Rep2	12291
+WST4Rep3	16807
+
+Total of all groups is 349312
+
+It took 38 secs to process 349312 sequences.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.fasta
+FASTQ/stability.scrap.contigs.fasta
+FASTQ/stability.contigs.report
+FASTQ/stability.contigs.groups
+````
+The output files **stability.trim.contigs.fasta** and **stability.contigs.groups** contain the sequence data and group identity for each sequence for downstream use.
+
+***Initial Sequence Read Summary***
+
+See what the sequences look like using the `summary.seqs` command:
+
+````markdown
+`r ''`{Mothur}
+summary.seqs(fasta=FASTQ/stability.trim.contigs.fasta)
+
+### Output
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	1	248	248	0	3	1
+2.5%-tile:	1	253	253	0	3	8733
+25%-tile:	1	253	253	0	4	87329
+Median: 	1	253	253	0	5	174657
+75%-tile:	1	253	253	0	5	261985
+97.5%-tile:	1	254	254	5	6	340580
+Maximum:	1	502	502	84	220	349312
+Mean:	1	253	253	0	4
+# of Seqs:	349312
+
+It took 3 secs to summarize 349312 sequences.
+
+Output File Names:
+FASTQ/stability.trim.contigs.summary
+````
+This tells us that we have 349,312 sequences that mostly vary between 248 and 254 bases.  The longest read in the dataset is 502 bp, which will be removed in subsequent steps because all reads are supposed to be 251 bp based on the Illumina MiSeq sequencing platform.
+
+***Screen Sequencing Reads***
+
+Run the command `screen.seqs` to remove poor-quality reads or those with ambiguous base calls.  This command removes any sequences longer than 275 bp.
+
+````markdown
+`r ''`{Mothur}
+screen.seqs(fasta=FASTQ/stability.trim.contigs.fasta, group=FASTQ/stability.contigs.groups, summary=FASTQ/stability.trim.contigs.summary, maxambig=0, maxlength=275)
+
+### Output
+It took 2 secs to screen 349312 sequences, removed 41614.
+
+/******************************************/
+Running command: remove.seqs(accnos=FASTQ/stability.trim.contigs.bad.accnos.temp, group=FASTQ/stability.contigs.groups)
+Removed 41614 sequences from your group file.
+
+Output File Names: 
+FASTQ/stability.contigs.pick.groups
+
+/******************************************/
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.summary
+FASTQ/stability.trim.contigs.good.fasta
+FASTQ/stability.trim.contigs.bad.accnos
+FASTQ/stability.contigs.good.groups
+
+
+It took 6 secs to screen 349312 sequences.
+````
+
+***Processing Improved Sequences***
+
+Here, we retain only a unique copy of each seqeunce to reduce computational resources using the `unique.seqs` command because many of our sequences are likely duplicates of each other.  If two sequences have the same identical sequence then they are considered duplicates and are merged.
+
+````markdown
+`r ''`{Mothur}
+unique.seqs(fasta=FASTQ/stability.trim.contigs.good.fasta)
+
+### Output
+307698	81316
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.names
+FASTQ/stability.trim.contigs.good.unique.fasta
+````
+After running `unique.seqs`, we've gone from 307,698 to 81,316 sequences.
+
+***Simplify Name and Group Files***
+
+Run `count.seqs` command to generate a table where the rows are the names of the unique sequences and the columns are the names of the groups.  The table is then filled with the number of times each unique sequence shows up in each group.
+
+````markdown
+`r ''`{Mothur}
+count.seqs(name=FASTQ/stability.trim.contigs.good.names, group=FASTQ/stability.contigs.good.groups)
+
+### Output
+It took 2 secs to create a table for 307698 sequences.
+
+Total number of sequences: 307698
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.count_table
+````
+
+***Re-summarize Sequence Reads***
+
+Run the `summary.seqs` command again to see improvements in sequence read quality.
+
+````markdown
+`r ''`{Mothur}
+summary.seqs(count=FASTQ/stability.trim.contigs.good.count_table)
+
+### Output
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	1	251	251	0	3	1
+2.5%-tile:	1	253	253	0	3	7693
+25%-tile:	1	253	253	0	4	76925
+Median: 	1	253	253	0	5	153850
+75%-tile:	1	253	253	0	5	230774
+97.5%-tile:	1	254	254	0	6	300006
+Maximum:	1	275	275	0	10	307698
+Mean:	1	253	253	0	4
+# of unique seqs:	81316
+total # of seqs:	307698
+
+It took 1 secs to summarize 307698 sequences.
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.summary
+````
+
+***Align Sequences to Reference Alignment***
+
+Use the SILVA reference file for sequence alignment (v.132), which can be downloaded as a [Full-length sequences and taxonomy references](https://mothur.s3.us-east-2.amazonaws.com/wiki/silva.nr_v132.tgz).  This file contains 188,247 bacteria, 4,626 archaea, and 20,246 eukarya sequences.  This step is RAM-intensive and requires additional computational resources beyond a GLC login-node capacity.
+
+````markdown
+`r ''`{Mothur}
+align.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.fasta, reference=silva.nr_v132/silva.nr_v132.align)
+
+### Output
+It took 386 secs to align 81316 sequences.
+
+[WARNING]: 4 of your sequences generated alignments that eliminated too many bases, a list is provided in FASTQ/stability.trim.contigs.good.unique.flip.accnos.
+[NOTE]: 1 of your sequences were reversed to produce a better alignment.
+
+It took 389 seconds to align 81316 sequences.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.align
+FASTQ/stability.trim.contigs.good.unique.align.report
+FASTQ/stability.trim.contigs.good.unique.flip.accnos
+````
+
+***Summarize Aligned Sequence Reads***
+
+Run the `summary.seqs` command again to see the alignment results for all sequence reads.
+
+````markdown
+`r ''`{Mothur}
+summary.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.align, count=FASTQ/stability.trim.contigs.good.count_table)
+
+### Output
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	1046	1056	3	0	1	1
+2.5%-tile:	13862	23444	253	0	3	7693
+25%-tile:	13862	23444	253	0	4	76925
+Median: 	13862	23444	253	0	5	153850
+75%-tile:	13862	23444	253	0	5	230774
+97.5%-tile:	13862	23444	254	0	6	300006
+Maximum:	43113	43116	275	0	10	307698
+Mean:	13862	23444	253	0	4
+# of unique seqs:	81316
+total # of seqs:	307698
+
+It took 25 secs to summarize 307698 sequences.
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.summary
+````
+
+***Re-Run Sequence Screen***
+
+To make sure all sequences overlap the same region we re-run `screen.seqs` command to get sequences that start at or before position 13,862 and end at or after position 23,444.  We also set the maximum homopolymer length to 8 since there's nothing in the database with a stretch of 9 or more of the same base in a row.
+
+````markdown
+`r ''`{Mothur}
+screen.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.align, count=FASTQ/stability.trim.contigs.good.count_table, summary=FASTQ/stability.trim.contigs.good.unique.summary, start=13862, end=23444, maxhomop=8)
+
+### Output
+It took 24 secs to screen 81316 sequences, removed 203.
+
+/******************************************/
+Running command: remove.seqs(accnos=FASTQ/stability.trim.contigs.good.unique.bad.accnos.temp, count=FASTQ/stability.trim.contigs.good.count_table)
+Removed 292 sequences from your count file.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.pick.count_table
+
+/******************************************/
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.good.summary
+FASTQ/stability.trim.contigs.good.unique.good.align
+FASTQ/stability.trim.contigs.good.unique.bad.accnos
+FASTQ/stability.trim.contigs.good.good.count_table
+
+
+It took 26 secs to screen 81316 sequences.
+````
+
+````markdown
+`r ''`{Mothur}
+summary.seqs(fasta=current, count=current)
+
+### Output
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	10289	23444	251	0	3	1
+2.5%-tile:	13862	23444	253	0	3	7686
+25%-tile:	13862	23444	253	0	4	76852
+Median: 	13862	23444	253	0	5	153704
+75%-tile:	13862	23444	253	0	5	230555
+97.5%-tile:	13862	23444	254	0	6	299721
+Maximum:	13862	26160	275	0	8	307406
+Mean:	13861	23444	253	0	4
+# of unique seqs:	81113
+total # of seqs:	307406
+
+It took 24 secs to summarize 307406 sequences.
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.good.summary
+````
+
+***Filter Sequences***
+
+Now that the sequences overlap the same alignment coordinates, we filter the sequences to remove the overhangs at both ends.  In addition, there are many columns in the alignment that only contain gap characters that can be pulled without losing any information.  Use the `filter.seqs` command.
+
+````markdown
+`r ''`{Mothur}
+filter.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.align, vertical=T, trump=.)
+
+### Output
+It took 22 secs to filter 81113 sequences.
+
+
+
+Length of filtered alignment: 607
+Number of columns removed: 49393
+Length of the original alignment: 50000
+Number of sequences used to construct filter: 81113
+
+Output File Names: 
+FASTQ/stability.filter
+FASTQ/stability.trim.contigs.good.unique.good.filter.fasta
+````
+
+This means our initial alignment was 50,000 columns wide and we removed 49,393 terminal gap characters using trump=. and vertical gap characters using vertical=T. The final alignment length is 607 columns.
+
+***Remove Redundancy***
+
+It is possible that we created some redundancy by trimming the ends of sequences, so we re-run the `unique.seqs` command.
+
+````markdown
+`r ''`{Mothur}
+unique.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.fasta, count=FASTQ/stability.trim.contigs.good.good.count_table)
+
+### Output
+81113	81105
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.count_table
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.fasta
+````
+These results indicate that 8 duplicate sequences were identified and merged with previous unique sequences.
+
+
+***Pre-Cluster Sequences***
+
+Now we pre-cluster the sequences to further de-noise the sequences, using the `pre.cluster` command which allows for up to 2 differences between sequences.
+
+````markdown
+`r ''`{Mothur}
+pre.cluster(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.fasta, count=FASTQ/stability.trim.contigs.good.unique.good.filter.count_table, diffs=2)
+
+### Output
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.pick.fasta
+
+/******************************************/
+It took 29 secs to run pre.cluster.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.count_table
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.NegCTRL.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.PosCTRL.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT0Rep1.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT0Rep2.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT0Rep3.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT24Rep1.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT24Rep2.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT24Rep3.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT4Rep1.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT4Rep2.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.TussT4Rep3.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST0Rep1.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST0Rep2.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST0Rep3.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST24Rep1.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST24Rep2.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST24Rep3.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST4Rep1.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST4Rep2.map
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.WST4Rep3.map
+````
+At this point we have removed as much sequencing error as possible and we now have to remove chimeras.
+
+***Remove Chimeras***
+
+Use the VSEARCH algorithm within the `chimera.vsearch` command to split the sequencing data and check for chimeras.  ***NOTE: the `chimera.vsearch` command does NOT work in mothur/1.43.0.  Exit mothur, reload as v1.42.3, re-enter mothur, and re-run `chimera.vsearch` command as shown below.***
+
+````markdown
+`r ''`{Mothur}
+chimera.vsearch(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.count_table, dereplicate=t)
+
+### Output
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.chimeras
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.accnos
+````
+
+We also need to remove these identified chimeras from the fasta file using the `remove.seqs` command.  ***NOTE: Switch back to mothur/1.43.0 to complete these steps.***
+
+````markdown
+`r ''`{Mothur}
+remove.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, accnos=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.accnos)
+
+### Output
+Removed 22133 sequences from your fasta file.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta
+````
+
+Re-summarize the sequence reads after removing chimeras.
+
+````markdown
+`r ''`{Mothur}
+summary.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table)
+
+### Output
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	1	607	222	0	3	1
+2.5%-tile:	1	607	253	0	3	6777
+25%-tile:	1	607	253	0	4	67767
+Median: 	1	607	253	0	5	135533
+75%-tile:	1	607	253	0	5	203299
+97.5%-tile:	1	607	254	0	6	264288
+Maximum:	1	607	273	0	8	271064
+Mean:	1	607	253	0	4
+# of unique seqs:	30111
+total # of seqs:	271064
+
+It took 0 secs to summarize 271064 sequences.
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.summary
+````
+Note that we went from 307,406 to 271,064 sequences for a reduction of 11.8%.  This is a reasonable number of sequences to be flagges as chimeric.
+
+***Classify Sequences***
+
+Classify QC'd sequence reads using the Bayesian classifier with the `classify.seqs` command.  Here we used the SILVA reference alignment and reference taxonomy files (SILVA v132 database).
+
+````markdown
+`r ''`{Mothur}
+classify.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, reference=silva.nr_v132/silva.nr_v132.align, taxonomy=silva.nr_v132/silva.nr_v132.tax, cutoff=80)
+
+### Output
+It took 262 secs to classify 30111 sequences.
+
+
+It took 1 secs to create the summary file for 30111 sequences.
+
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.taxonomy
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.tax.summary
+````
+
+**ALTERNATIVE TAXONOMY REFERENCE DATABASE**
+
+````markdown
+`r ''`{Mothur}
+classify.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, reference=trainset16_022016.rdp/trainset16_022016.rdp.fasta, taxonomy=trainset16_022016.rdp/trainset16_022016.rdp.tax, cutoff=80)
+
+### Output
+It took 12 secs to classify 30111 sequences.
+
+
+It took 1 secs to create the summary file for 30111 sequences.
+
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.taxonomy
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.tax.summary
+````
+
+***Remove Undesired Lineages***
+
+With all sequences classified, we remove undesired lineages such as "unknown", "Chloroplast", 
+
+````markdown
+`r ''`{Mothur}
+remove.lineage(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, taxonomy=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.taxonomy, taxon=Chloroplast-Mitochondria-unknown-Eukaryota)
+
+### Output
+Removed 56 sequences from your fasta file.
+Removed 177 sequences from your count file.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table
+
+/******************************************/
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.taxonomy
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.accnos
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta
+````
+
+***Re-summarize Sequence Reads after Classifying***
+
+````markdown
+`r ''`{Mothur}
+summary.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
+
+### Output
+		Start	End	NBases	Ambigs	Polymer	NumSeqs
+Minimum:	1	607	227	0	3	1
+2.5%-tile:	1	607	253	0	3	6773
+25%-tile:	1	607	253	0	4	67722
+Median: 	1	607	253	0	5	135444
+75%-tile:	1	607	253	0	5	203166
+97.5%-tile:	1	607	254	0	6	264115
+Maximum:	1	607	273	0	8	270887
+Mean:	1	607	253	0	4
+# of unique seqs:	30055
+total # of seqs:	270887
+
+It took 1 secs to summarize 270887 sequences.
+
+Output File Names:
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.summary
+````
+Results indicate that 177 sequences were in these undesired classifications and were removed from the dataset.
+
+*** Summarize Taxonony***
+
+Create an updated taxonomy summary file that reflects the sequences removed using the `summary.tax` command.
+
+````markdown
+`r ''`{Mothur}
+summary.tax(taxonomy=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.taxonomy, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
+
+### Output
+It took 1 secs to create the summary file for 270887 sequences.
+
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.tax.summary
+````
+
+At this point we have curated our data as far as possible and are ready for downstream data analyses.
+
+### 2.2 Prep Analysis
+
+***Remove CTRLS***
+
+First, we remove the Positive and Negative CTRL sequences from the dataset.
+
+````markdown
+`r ''`{Mothur}
+remove.groups(count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, taxonomy=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.taxonomy, groups=PosCTRL-NegCTRL)
+
+### Output
+Removed 8770 sequences from your count file.
+Removed 26 sequences from your fasta file.
+Removed 26 sequences from your taxonomy file.
+
+Output File names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.pick.count_table
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.fasta
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.pick.taxonomy
+````
+
+***OTU Clustering***
+
+Cluster sequencing reads into Operational Taxonomic Units (OTUs) at 97% similarity using the `dist.seqs` and `cluster` commands.
+
+````markdown
+`r ''`{Mothur}
+dist.seqs(fasta=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.fasta, cutoff=0.03)
+
+### Output
+It took 82 secs to find distances for 30029 sequences. 302511 distances below cutoff 0.03.
+
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.dist
+````
+
+````markdown
+`r ''`{Mothur}
+cluster(column=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.dist, count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.pick.count_table)
+
+### Output
+It took 4 seconds to cluster
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.list
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.steps
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.sensspec
+````
+
+***OTU Counts***
+
+To determine how many sequences are in each OTU from each group we used the `make.shared` command at the 0.03 cutoff level.
+
+````markdown
+`r ''`{Mothur}
+make.shared(list=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.list,count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.pick.count_table, label=0.03)
+
+### Output
+0.03
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.shared
+````
+
+***OTU Taxonomy***
+
+Create consensus taxonomy for each OTU using the `classify.otu` command.
+
+````markdown
+`r ''`{Mothur}
+classify.otu(list=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.list,count=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.pick.count_table,taxonomy=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.rdp.wang.pick.pick.taxonomy, label=0.03)
+
+### Output
+0.03	9358
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.0.03.cons.taxonomy
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.0.03.cons.tax.summary
+````
+
+***Sample Sequence Count***
+
+See how many sequences we have in each sample using the `count.groups` command.
+
+````markdown
+`r ''`{Mothur}
+count.groups(shared=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.shared)
+
+### Output
+TussT0Rep1 contains 13990.
+TussT0Rep2 contains 15111.
+TussT0Rep3 contains 15274.
+TussT24Rep1 contains 13583.
+TussT24Rep2 contains 15715.
+TussT24Rep3 contains 12633.
+TussT4Rep1 contains 26096.
+TussT4Rep2 contains 13731.
+TussT4Rep3 contains 14592.
+WST0Rep1 contains 23220.
+WST0Rep2 contains 14261.
+WST0Rep3 contains 13899.
+WST24Rep1 contains 13121.
+WST24Rep2 contains 13044.
+WST24Rep3 contains 11152.
+WST4Rep1 contains 10059.
+WST4Rep2 contains 9565.
+WST4Rep3 contains 13071.
+
+Size of smallest group: 9565.
+
+Total seqs: 262117.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.count.summary
+````
+
+***Subsampling Data***
+
+Despite what some say, subsampling and rarefying your data is an important thing to do.  We generated a subsampled file for our analyses with the `sub.sample` command.
+
+````markdown
+`r ''`{Mothur}
+sub.sample(shared=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.shared, size=9565)
+
+### Output
+Sampling 9565 from each group.
+0.03
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.0.03.subsample.shared
+````
+
+### 2.3 OTU Analysis
+
+#### 2.3.1 Alpha Diversity
+
+***Rarefaction Curves***
+
+We start our analysis by analyzing the alpha diversity of the samples.  First, we generated rarefaction curves describing the number of OTUs observed as a function of sampling effort using the `rarefaction.single` command using the NON-subsampled shared file (full dataset).
+
+````markdown
+`r ''`{Mothur}
+rarefaction.single(shared=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.shared, calc=sobs, freq=100)
+
+### Output
+It took 4 secs to run rarefaction.single.
+
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.groups.rarefaction
+````
+
+***Diversity Table***
+
+Here, we generated a table containing the number of sequences, the sample coverage, the number of observed OTUs, and the Inverse Simpson diversity estimate using the `summary.single` command.  To standardize, we randomly selected 9,565 sequences from each sample 1,000 times and calculated the average.
+
+````markdown
+`r ''`{Mothur}
+summary.single(shared=FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.shared, calc=nseqs-coverage-sobs-invsimpson, subsample=T)
+
+### Output
+Output File Names: 
+FASTQ/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.groups.ave-std.summary
+````
+
+## 3. 16S Analysis
+
+### 3.1 Taxonomy
+
+```{r}
+# Call in the taxonomy summary table generated from MOTHUR
+taxa.rdp.summary<-read.table("MOTHUR/RDP/stability.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.pick.opti_mcc.0.03.cons.tax.summary", header = TRUE, sep = "\t")
+```
+
+```{r}
+#Subsample at the Phylum level
+taxa.phylum<-subset(taxa.rdp.summary, taxlevel==2)
+
+# Remove rows containing "unclassified" taxa
+taxa.phylum <- taxa.phylum[!grepl("Archaea_unclassified", taxa.phylum$taxon),]
+taxa.phylum <- taxa.phylum[!grepl("Bacteria_unclassified", taxa.phylum$taxon),]
+
+# Create new column with rankID and taxon
+taxa.phylum$taxID <- paste(taxa.phylum$taxon, taxa.phylum$rankID, sep="_")
+
+# Preserve taxID as row names
+row.names(taxa.phylum) <- taxa.phylum$taxID
+
+# Remove non-numeric columns
+taxa.phylum.new <- taxa.phylum[,-c(1:5,24)]
+
+# Convert from absolute to relative abundance
+taxa.phylum.sums<-colSums(taxa.phylum.new)
+taxa.phylum.test1<-as.matrix(taxa.phylum.new)
+taxa.phylum.test2<-1/taxa.phylum.sums
+taxa.phylum.test3<-t(taxa.phylum.test1)
+taxa.phylum.test4<-(taxa.phylum.test3*taxa.phylum.test2)*100
+taxa.phylum.test5<-t(taxa.phylum.test4)
+taxa.phylum.rel<-as.data.frame(taxa.phylum.test5)
+taxa.phylum.rel$taxID<-row.names(taxa.phylum.rel)
+
+# Add factor columns back in
+taxa.phylum.factor<-taxa.phylum[,c(1:5,24)]
+
+# Merge factors back into Rel Abund table
+taxa.phylum.final<-merge(taxa.phylum.factor,taxa.phylum.rel,by="taxID",all=TRUE)
+```
+
+```{r echo=FALSE, eval=FALSE}
+write.csv(taxa.phylum.final, "MOTHUR/Results/taxa.phylum.final.csv")
+```
+
+```{r}
+#Subsample at the Class level
+taxa.class<-subset(taxa.rdp.summary, taxlevel==3)
+
+# Remove rows containing "unclassified" taxa
+taxa.class <- taxa.class[!grepl("Archaea_unclassified", taxa.class$taxon),]
+taxa.class <- taxa.class[!grepl("Bacteria_unclassified", taxa.class$taxon),]
+
+# Create new column with rankID and taxon
+taxa.class$taxID <- paste(taxa.class$taxon, taxa.class$rankID, sep="_")
+
+# Preserve taxID as row names
+row.names(taxa.class) <- taxa.class$taxID
+
+# Remove non-numeric columns
+taxa.class.new <- taxa.class[,-c(1:5,24)]
+
+# Convert from absolute to relative abundance
+taxa.class.sums<-colSums(taxa.class.new)
+taxa.class.test1<-as.matrix(taxa.class.new)
+taxa.class.test2<-1/taxa.class.sums
+taxa.class.test3<-t(taxa.class.test1)
+taxa.class.test4<-(taxa.class.test3*taxa.class.test2)*100
+taxa.class.test5<-t(taxa.class.test4)
+taxa.class.rel<-as.data.frame(taxa.class.test5)
+taxa.class.rel$taxID<-row.names(taxa.class.rel)
+
+# Add factor columns back in
+taxa.class.factor<-taxa.class[,c(1:5,24)]
+
+# Merge factors back into Rel Abund table
+taxa.class.final<-merge(taxa.class.factor,taxa.class.rel,by="taxID",all=TRUE)
+```
+
+```{r echo=FALSE, eval=FALSE}
+write.csv(taxa.class.final, "MOTHUR/Results/taxa.class.final.csv")
+```
+
+### 3.2 Plotting Taxonomy
+
+#### 3.2.1 All Replicates
+
+Plot the relative abundance of taxa by all replicates within tussock and wet sedge tundra as a stackplot.
+```{r echo=FALSE}
+taxa.16s.all.chart<-read.csv("Plot.Data/taxa.16s.all.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.16s.all.chart$Species<-factor(taxa.16s.all.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.16s.all.chart$Species<-fct_rev(taxa.16s.all.chart$Species)
+
+taxa.16s.all.chart$Sample<-factor(taxa.16s.all.chart$Sample,levels = c("Tuss1-16S-T0","Tuss2-16S-T0","Tuss3-16S-T0","Tuss1-16S-T4","Tuss2-16S-T4","Tuss3-16S-T4","Tuss1-16S-T24","Tuss2-16S-T24","Tuss3-16S-T24","WS1-16S-T0","WS2-16S-T0","WS3-16S-T0","WS1-16S-T4","WS2-16S-T4","WS3-16S-T4","WS1-16S-T24","WS2-16S-T24","WS3-16S-T24"))
+```
+
+```{r}
+colourCount = length(unique(taxa.16s.all.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.16s.all.plot<-ggplot(taxa.16s.all.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Relative Taxon", paste("Expression (%)")))) + theme_minimal() + theme(axis.text=element_text(size=10),axis.title=element_text(size=12),axis.title.x=element_blank()) + theme(legend.position = "right", legend.title=element_blank(), legend.text=element_text(size=8), legend.key.size = unit(0.75,"line"), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), panel.border = element_blank()) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 8)) + scale_size(guide=FALSE) + scale_fill_manual(values = rev(getPalette(colourCount))) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 15)) + theme(axis.text.x = element_text(angle = 270, hjust=0)) 
+```
+
+```{r}
+taxa.16s.all.plot
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# Save the Ribosome Taxonomy plot as an individual figure
+setEPS()
+postscript("Fig.S2.Ribo.Stackplot.eps", width=7, height = 5.0)
+ggarrange(taxa.ribo.plot, heights=c(3,3),
+          ncol = 1, nrow = 1)
+dev.off()
+```
+
+#### 3.2.2 Mean Time Point
+
+Plot the mean relative abundance of taxa by sampling time point within tussock and wet sedge tundra as a stackplot.
+```{r echo=FALSE}
+taxa.16s.time.mean.chart<-read.csv("Plot.Data/taxa.16s.time.mean.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.16s.time.mean.chart$Species<-factor(taxa.16s.time.mean.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.16s.time.mean.chart$Species<-fct_rev(taxa.16s.time.mean.chart$Species)
+
+taxa.16s.time.mean.chart$Sample<-factor(taxa.16s.time.mean.chart$Sample,levels = c("Tuss-16S-T0","Tuss-16S-T4","Tuss-16S-T24","WS-16S-T0","WS-16S-T4","WS-16S-T24"))
+```
+
+```{r}
+colourCount = length(unique(taxa.16s.time.mean.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.16s.time.mean.plot<-ggplot(taxa.16s.time.mean.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Relative Taxon", paste("Expression (%)")))) + theme_minimal() + theme(axis.text=element_text(size=10),axis.title=element_text(size=12),axis.title.x=element_blank()) + theme(legend.position = "right", legend.title=element_blank(), legend.text=element_text(size=8), legend.key.size = unit(0.75,"line"), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), panel.border = element_blank()) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 8)) + scale_size(guide=FALSE) + scale_fill_manual(values = rev(getPalette(colourCount))) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 15)) + theme(axis.text.x = element_text(angle = 270, hjust=0)) 
+```
+
+```{r}
+taxa.16s.time.mean.plot
+```
+
+#### 3.2.3 Mean Tundra
+
+Plot the mean relative abundance of taxa by within tussock and wet sedge tundra as a stackplot.
+```{r echo=FALSE}
+taxa.16s.tundra.mean.chart<-read.csv("Plot.Data/taxa.16s.tundra.mean.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.16s.tundra.mean.chart$Species<-factor(taxa.16s.tundra.mean.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.16s.tundra.mean.chart$Species<-fct_rev(taxa.16s.tundra.mean.chart$Species)
+
+taxa.16s.tundra.mean.chart$Sample<-factor(taxa.16s.tundra.mean.chart$Sample,levels = c("Tuss-16S","WS-16S"))
+```
+
+```{r}
+colourCount = length(unique(taxa.16s.tundra.mean.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.16s.tundra.mean.plot<-ggplot(taxa.16s.tundra.mean.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Relative Taxon", paste("Expression (%)")))) + theme_minimal() + theme(axis.text=element_text(size=10),axis.title=element_text(size=12),axis.title.x=element_blank()) + theme(legend.position = "right", legend.title=element_blank(), legend.text=element_text(size=8), legend.key.size = unit(0.75,"line"), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), panel.border = element_blank()) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 8)) + scale_size(guide=FALSE) + scale_fill_manual(values = rev(getPalette(colourCount))) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 15)) + theme(axis.text.x = element_text(angle = 270, hjust=0)) 
+```
+
+```{r}
+taxa.16s.tundra.mean.plot
+```
+
+### 3.3 Taxonomy Statistics
+
+To determine if there are significant differences in mean relative abundance of dominant taxa between tundra ecosystems, we calculate the mean (SD) of each phylum (dominant phylum; >1%) within tussock tundra and within wet sedge tundra throughout the experiment and compare to each other.
+
+Test for differences in mean relative abundance of dominant phyla between tundra ecosystems.
+
+```{r echo=FALSE}
+taxa.16S.phylum.t.test<-read.csv("Stats.Data/taxa.16S.phylum.t.test.csv")
+```
+
+```{r}
+# Pairwise comparisons between tundra ecosystems for each microbial taxonomic class
+taxa.16S.phylum.t.test.stats <- taxa.16S.phylum.t.test %>%
+  group_by(Phylum) %>%
+  pairwise_t_test(
+    Abundance ~ Tundra, paired = TRUE, 
+    p.adjust.method = "bonferroni"
+    ) %>%
+  select(-.y., -n1, -n2, -df, -statistic, -p) # Remove details
+taxa.16S.phylum.t.test.stats
+```
+
+# Reproducibility
+
+The session information is provided for full reproducibility.
+```{r}
+devtools::session_info()
+```

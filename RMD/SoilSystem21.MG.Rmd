@@ -1,0 +1,2876 @@
+---
+title: "Microbial Response to Rainfall -- Metagenome Analysis"
+author: 'Authors: [Karl J. Romanowicz](https://lsa.umich.edu/eeb/people/graduate-students/kjromano.html),
+  Byron C. Crump, George W. Kling'
+output:
+  html_notebook:
+    theme: spacelab
+    toc: yes
+    toc_depth: 5
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+  html_document:
+    toc: yes
+    toc_depth: '5'
+    df_print: paged
+  pdf_document:
+    toc: yes
+    toc_depth: '5'
+---
+
+__________________________________________________
+
+**R Notebook:** Provides reproducible analysis for metagenome (MG) data in the following manuscript:
+
+**Citation:** Romanowicz, KJ, Crump, BC, Kling, GW. (2021) Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the arctic. Soil Systems 5(1): 17. [https://doi.org/10.3390/soilsystems5010017](https://doi.org/10.3390/soilsystems5010017)
+
+**GitHub Repository:** [https://github.com/kromanowicz/2021-Romanowicz-SoilSystems](https://github.com/kromanowicz/2021-Romanowicz-SoilSystems)
+
+**NCBI BioProject:** [https://www.ncbi.nlm.nih.gov/bioproject/PRJNA666429](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA666429)
+
+**Accepted for Publication:** *Soil Systems* 10 March 2021
+
+# Experiment
+
+This R Notebook provides complete reproducibility of the data analysis in ***"Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the Arctic "*** by Romanowicz, Crump, and Kling. In this experiment, mesocosms containing soil from the active layer of two dominant tundra types were subjected to simulated rainfall to alter redox conditions.  The microbial functional potential (metagenomics) and gene expression (metatranscriptomics) patterns were measured during saturated anoxic redox conditions prior to rainfall and at multiple time points following the simulated rainfall event. Other measurements include soil properties as well as microbial respiration (CO~2~) and methane (CH~4~) production from soil subsamples collected at each sampling time point. The purpose was to determine if rainfall, as a form of soil oxidation, is sufficient to alter the anoxic redox conditions in arctic tundra and enhance the microbial degradation of organic carbon and CH~4~ to CO~2~.
+
+<!-- Display Figure 1 -->
+![](R.Images/Concept1.png)
+**Conceptual Figure.**  A total of 12 tundra mesocosms (3 replicates x 2 tundra types x 2 sets of response cores) were acclimated initially under anoxic redox conditions to mimic field conditions (T0).  Dissolved oxygen was supplied to soils through the downward flow of oxygenated water during a simulated rainfall event.  Dissolved oxygen will likely change the redox gradient directly following rainfall (T4) as a short-term effect.  Anoxic conditions will likely be re-established after 24 hours (T24) as the pulse of oxygen is consumed through abiotic and biotic soil processes.  Under anoxic redox conditions (T0), microorganisms likely degrade organic carbon through anaerobic and fermentation pathways, producing CH~4~ and reducing Fe(III) to Fe(II).  Rainfall-induced soil oxidation (T4) should stimulate heterotrophic microorganisms that degrade organic carbon and CH~4~ through aerobic metabolic pathways, releasing CO~2~. Soil oxidation should also stimulate aerobic autotrophic iron oxidizing bacteria that oxidize Fe(II) to Fe(III) and convert CO~2~ into microbial biomass.  The long-term response (T24) will likely be a combination of aerobic and anaerobic metabolism as well as a combination of reduction and oxidation iron reactions as dissolved oxygen is consumed.  The predicted redox conditions and predicted redox reactions for coupled Fe(II)/Fe(III) cycling, as well as the microbial-induced release of CO~2~ or CH~4~ at each time point are based on the predicted availability of dissolved oxygen entering tundra soils through simulated rainfall.
+
+<font color="blue">**Soil Sampling for Microbial Gene Expression**</font>
+
+An initial soil sampling event for microbial activity was conducted at the end of the anoxic acclimation period (4-7 days) in all mesocosm replicates, representing sampling time point **T0**.  Mesocosms were then flushed to simulate a rainfall event.  Additional soil sampling events were conducted at **T4** (4-hrs) and **T24** (24-hrs) following the rainfall event to determine the temporal extent of microbial gene expression.  Soil cores (2.54 cm diameter, 30 cm length) were extracted in duplicate from each mesocosm replicate at each sampling time point and homogenized by depth in 10-cm increments.  The 10-20 cm soil increment, composed of organic soil in all mesocosm replicates, was chosen for microbial gene expression analysis and preserved in RNAlater Stabilization Reagent in sterile tubes at 4&deg;C for 18 hours and then stored at -80&deg;C until extraction.
+
+![](R.Images/Buckets.png)
+
+**Field Experiment.** Tundra soil cores were collected from field sites in August 2017 (top left) and placed in buckets to establish the mesocosm experiment (bottom left).  Tussock tundra cores were composed of an organic soil layer overlying a mineral soil layer (top middle) while wet sedge tundra cores were composed entirely of organic soil (bottom middle).  Soil subsampling for microbial activity was taken from the 10-20 cm depth of duplicate soil cores in Tussock (top right) and Wet Sedge (bottom right).
+
+```{r echo=FALSE}
+# Set global options for notebook
+knitr::opts_knit$set(root.dir = normalizePath("~/Desktop/RainSim2017"))
+knitr::opts_chunk$set(fig.width=10, fig.height=8, warning=FALSE, message=FALSE)
+```
+
+```{r message=FALSE, results='hide', warning=FALSE}
+# Make a vector of required packages
+required.packages <- c("ape","cowplot","data.table","devtools","dplyr","DT","ggplot2","ggpubr","grid","gridExtra","kableExtra","knitr","pheatmap","png","RColorBrewer","reshape","rstatix","statmod","stringr","tibble","tidyr","tidyverse","vegan","yaml")
+
+# Load required packages
+lapply(required.packages, library, character.only = TRUE)
+```
+
+# Metagenomes
+
+## 1. DNA Sequencing
+
+Extracted DNA was sequenced on the Illumina HiSeq 4000 platform (150bp paired-end reads) at the University of Michigan Advanced Genomics Core.
+
+```{r echo=FALSE, results='asis'}
+dna.seqcore <-read.table("Table.Data/dna.seqcore.all.table.txt",sep='\t', quote="", fill=TRUE,header = TRUE)
+names(dna.seqcore)<- c("ID", "Sample", "Concentration (ng/ul)", "Volume (uL)", "Fragment Length", "i7", "i5", "Barcode i7", "Barcode i5")
+kable(dna.seqcore, caption = "SeqCore DNA sample submission to Illumina HiSeq platform", align = "c") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
+  row_spec(16:18, bold = T, color = "white", background = "#D7261E")
+```
+**NOTE:** DNA Samples in <font color="red">RED</font> were excluded from sequencing
+
+## 2. DNA Bioinformatics
+
+### 2.1. Raw Reads
+
+***Prep the Raw Reads (Hein: Comics -- Omics Prep)***
+
+Use the `comics` container to prep the raw reads.
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work
+comics -- omics prep /DNA_data/Sample_1071*
+````
+**DNA.data.raw.prep.pbs** <font color="green">("/DNA_data/work/")</font> 00:19 (hr:min)
+
+- Rename the sample folders newly created in the <font color="green">"DNA_data/work"</font> directory as "**Sample_107104**", etc.
+- Rename the `.fastq` files within each sample folder in the <font color="green">"DNA_data/work"</font> directory as "**Sample_107104_fwd.fastq**", "**Sample_107104_rev.fastq**", etc.
+
+### 2.2. QC Raw Reads
+
+***QC the Raw Reads (Smith: BBMap_QC)***
+
+- The "**bbmap_qc.sh**" script was provided but needed to be edited internally to reference the correct directories and parser files (*see "**bbmap_qc.sh**" in the "**SCRIPTS**" section for all internal coding*)
+- Place the "**bbmap_qc.sh**" script file in the <font color="green">"DNA_data/work"</font> directory
+- Run the "**bbmap_qc.sh**" script and specify a "**.log**" file output
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work
+bash bbmap_qc.sh > qc.log
+````
+**DNA.data.bbmap.qc.pbs** <font color="green">("/DNA_data/work/")</font> 05:32 (hr:min)
+
+### 2.3. Co-Assemble QC Reads
+
+***Co-Assemble the QC Reads (Smith: MegaHit)***
+
+- Create a new directory within <font color="green">"DNA_data/work"</font> named <font color="green">"DNA_data/work/co_assembly"</font>
+
+<font color="blue">**2.3.1**</font> Concatenate the QC'd sample reads into a single fwd and rev file
+
+- Concatenate the QC'd sample reads into a single fwd and rev file
+- Move the "**_adtrim_clean_qtrim_fwd.derep.fastq**" and "**_adtrim_clean_qtrim_rev.derep.fastq**" files from each sample to the <font color="green">"co_assembly"</font> directory
+- Concatonate the "**_adtrim_clean_qtrim_fwd.derep.fastq**" file from all samples into a single "**1071_fwd.derep.fastq**" prior to co-assembling
+- Concatonate the "**_adtrim_clean_qtrim_rev.derep.fastq**" file from all samples into a single "**1071_rev.derep.fastq**" prior to co-assembling
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+cat *_adtrim_clean_qtrim_fwd.derep.fastq > 1071_DNA_data_fwd.derep.fastq
+cat *_adtrim_clean_qtrim_rev.derep.fastq > 1071_DNA_data_rev.derep.fastq
+````
+**DNA.data.qc.read.concatonate.pbs** <font color="green">("/DNA_data/work/")</font> 03:40 (hr:min)
+
+<font color="blue">**2.3.2**</font> Normalize Reads to 20X Coverage Prior to Assembly
+
+- Normalize all kmers in the combined read dataset to 20X coverage (***NOTE:*** *This is kmer coverage, not read coverage*)
+- Also remove any kmers below 5X coverage (*if the coverage is this low after pooling all samples then it is probably due to sequencing error or a very rare organism that won’t assemble completely anyway*)
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+comics bbnorm in=1071_DNA_data_fwd.derep.fastq in2=1071_DNA_data_rev.derep.fastq out=1071_DNA_data_bbnorm_fwd.derep.fastq out2=1071_DNA_data_bbnorm_rev.derep.fastq target=20 mindepth=5 threads=20 -Xmx425g &> bbnorm.log
+````
+**DNA.data.bbnorm.pbs** <font color="green">("/DNA_data/work/")</font> 03:44 (hr:min)
+
+<font color="blue">**2.3.3**</font> Run the Assembly Module to Co-Assemble Contigs (Comics MegaHit)
+
+- Run the assembly module on QC/Pre-Processed (bbmap) reads to build contigs
+- Use the `MEGAHIT` assembler to assemble reads into contigs
+- *Generally, the more iterations, the longer the process takes and the better the assembly*
+  - For `MEGAHIT`: k=255 is the maximum, which, with a step size of 6 or 8, is recommended unless severely limited by computational resources
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+megahit --k-min 21 --k-max 255 --k-step 8 -1 1071_DNA_data_bbnorm_fwd.derep.fastq -2 1071_DNA_data_bbnorm_rev.derep.fastq -o ./megahit_out_bbnorm
+````
+**DNA.data.bbnorm.megahit.coassembly.k255.pbs** <font color="green">("/DNA_data/work/")</font> 38:15 (hr:min)
+
+<font color="blue">**2.3.4**</font> Re-Format the Contigs File from the MegaHit Co-Assembly
+
+- The contig headers in the "**final.contigs.fa**" file from `MEGAHIT` contained complex characters and spaces that were re-formatted prior to mapping
+  - This was essential so that the names of the contigs in the `BAM` files (*generated from the mapper*) matched those in the "**final.contigs.fa**" file **PRIOR** to importing into Anvi'o
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly/megahit_out_bbnorm
+
+head final.contigs.fa
+
+>k255_1 flag=1 multi=24.0000 len=301
+CATGCCCTGGCGCTGCAGCGGATCTGGCAGCTGACGCCGGAACCGCAGCGGCCGGAGATCCGCGCGCGTCTGCAGGCGCTCTACCCGCGGCTGGTCAAGTGGCATCGCTATCTCGCCACCCAGCGCGACCCCGAGGCATCGGGACTGGTCACCGTATACCACCCGTGGGAGAGCACGGACAACTCCCCGCGCTGGGACCGCTCGCTGGCACGCATCGAGGTGGTCAAGCCCCGCCCGTACACCCGCCTGGACACCCGTCAGGTGCGGGACCCGTCGCAGCGGCCCACCGACTGGGACTACG
+````
+
+- Numbers, letters, and underscores were OK in sequence names but any other characters cause trouble in Anvi'o
+- The following commands reformatted the "**final.contigs.fa**" file by replacing spaces and "=" signs with "_"
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly/megahit_out_bbnorm
+sed -e 's/\s/_/g' final.contigs.fa > final.contigs.fixed.bbnorm.fa
+sed -e 's/=/_/g' final.contigs.fixed.bbnorm.fa > final.contigs.fixed2.bbnorm.fa
+mv final.contigs.fixed2.bbnorm.fa final.contigs.fixed.bbnorm.fa
+
+head final.contigs.fixed.bbnorm.fa
+
+>k255_1_flag_1_multi_24.0000_len_301
+CATGCCCTGGCGCTGCAGCGGATCTGGCAGCTGACGCCGGAACCGCAGCGGCCGGAGATCCGCGCGCGTCTGCAGGCGCTCTACCCGCGGCTGGTCAAGTGGCATCGCTATCTCGCCACCCAGCGCGACCCCGAGGCATCGGGACTGGTCACCGTATACCACCCGTGGGAGAGCACGGACAACTCCCCGCGCTGGGACCGCTCGCTGGCACGCATCGAGGTGGTCAAGCCCCGCCCGTACACCCGCCTGGACACCCGTCAGGTGCGGGACCCGTCGCAGCGGCCCACCGACTGGGACTACG
+````
+
+### 2.4. Index Contigs and Map
+
+***Index the Co-Assembled Contigs and Map (Hein: Omics Mapping)***
+
+- Once the sequence headers in the contigs file were cleaned up, the co-assembly was indexed as follows:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly/megahit_out_bbnorm
+comics -- omics mapping -a final.contigs.fixed.bbnorm.fa --index-only
+````
+**DNA.data.bbnorm.index.contigs.pbs** <font color="green">("/DNA_data/work/")</font> 00:46 (hr:min)
+
+- The output was a directory called <font color="green">"/bowtie2-index"</font>
+- Rename as <font color="green">"/bowtie2-index_bbnorm"</font>
+
+<font color="blue">**2.4.1**</font> Map Short Reads from Each Sample to the Contigs
+
+- Create a <font color="green">"/DNA_data/work/mapping"</font> directory and move the <font color="green">"/bowtie2-index_bbnorm"</font> directory into it
+- Move the "**/co_assembly/megahit_out_bbnorm/final.contigs.fixed.bbnorm.fa**" file to the <font color="green">"/work/co_assembly"</font> directory
+- Individually map the short reads from each sample to the contigs, which will create separate output directories for each sample containing the mapping result files
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107104_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107104_adtrim_clean_qtrim_rev.derep.fastq -o 107104_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107105_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107105_adtrim_clean_qtrim_rev.derep.fastq -o 107105_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107106_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107106_adtrim_clean_qtrim_rev.derep.fastq -o 107106_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107107_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107107_adtrim_clean_qtrim_rev.derep.fastq -o 107107_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107108_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107108_adtrim_clean_qtrim_rev.derep.fastq -o 107108_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107110_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107110_adtrim_clean_qtrim_rev.derep.fastq -o 107110_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107111_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107111_adtrim_clean_qtrim_rev.derep.fastq -o 107111_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107112_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107112_adtrim_clean_qtrim_rev.derep.fastq -o 107112_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107113_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107113_adtrim_clean_qtrim_rev.derep.fastq -o 107113_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107114_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107114_adtrim_clean_qtrim_rev.derep.fastq -o 107114_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107115_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107115_adtrim_clean_qtrim_rev.derep.fastq -o 107115_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107116_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107116_adtrim_clean_qtrim_rev.derep.fastq -o 107116_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107117_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107117_adtrim_clean_qtrim_rev.derep.fastq -o 107117_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107119_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107119_adtrim_clean_qtrim_rev.derep.fastq -o 107119_bbnorm_mapped_reads
+comics -- omics mapping --index-dir /DNA_data/work/mapping/bowtie2-index_bbnorm/ -a final.contigs.fixed.bbnorm.fa -f Sample_107121_adtrim_clean_qtrim_fwd.derep.fastq -r Sample_107121_adtrim_clean_qtrim_rev.derep.fastq -o 107121_bbnorm_mapped_reads
+````
+**DNA.data.bbnorm.short.read.mapping.pbs** <font color="green">("/DNA_data/work/")</font> 11:51 (hr:min)
+
+- The results for each individual sample were a mapping directory containing the following files:
+"**/DNA_data/work/co_assembly/\*bbnorm_mapped_reads**" (replace \* with SampleID)
+"**final.contigs.fixed.bbnorm.cov**" tab-delimited file of the average coverage of each contig in the assembly
+"**final.contigs.fixed.bbnorm.bam**" contains the mapping information
+"**final.contigs.fixed.bbnorm.sorted.bam**" contains the mapping information sorted by position
+"**final.contigs.fixed.bbnorm.sorted.bam.bai**" a companion file to the `sorted.bam` file, which contains the index
+- Move all of the "**/DNA_data/work/co_assembly/\*bbnorm_mapped_reads**" folders to the <font color="green">"/DNA_data/work/mapping"</font> directory
+- Re-name each file with the sample number as the prefix: "**Sample_107104.final.contigs.fixed.bbnorm.cov**", etc.
+
+### 2.5. Create Anvi'o Database
+
+***Create Anvi'o Database and Profiles (Smith: Anvi'o)***
+
+- Create an Anvi'o contigs database from the co-assembly and profile the abundance (coverage) information from the `.bam` files into an Anvi'o profile
+- Create a merged profile of all samples
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+anvi-gen-contigs-database -f final.contigs.fixed.bbnorm.fa -o DNA.data.bbnorm.anvio.contigs.db -n DNA_data_bbnorm --split-length 10000 --kmer-size 4
+````
+**DNA.data.bbnorm.anvio.contigs.database.pbs** <font color="green">("/DNA_data/work/")</font> 05:00 (hr:min)
+
+- Create the Anvi'o contigs database "**DNA_data_bbnorm_anvio_contigs.db**" file in the <font color="green">"/DNA_data/work/co_assembly"</font> directory
+- The "**DNA_data_bbnorm_anvio_contigs.db**" database contains contig sequences, splitting contigs larger than 10kb into splits of 10kb or less
+- Default kmer-size is "kmer-size 4"
+
+<font color="blue">**2.5.1**</font> Annotate Contigs Database -- HMMS
+
+- Annotate contigs database with the start and stop sites of single-copy house-keeping genes and rRNA genes
+- ***Necessary to get bin completeness and contamination metrics along with rRNA annotations in real time as bins will be manually refined in subsequent steps***
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+anvi-run-hmms -c DNA_data_bbnorm_anvio_contigs.db --num-threads 20
+````
+**DNA.data.bbnorm.anvio.contigs.hmms.pbs** <font color="green">("/DNA_data/work/")</font> 16:52 (hr:min)
+
+<font color="blue">**2.5.2**</font> Annotate Contigs Database -- GhostKoala
+
+- Annotate the Anvi'o gene calls with taxonomy and functional annotations from KEGG GhostKoala's online database
+
+<font color="blue">***2.5.2.1***</font> First, exporte the amino acid sequences of the Anvi'o gene calls:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+anvi-get-sequences-for-gene-calls -c DNA_data_bbnorm_anvio_contigs.db -o DNA_data_bbnorm_anvio_gene_calls.faa --get-aa-sequences
+````
+**DNA.data.bbnorm.anvio.export.aa.seqs.pbs** <font color="green">("/DNA_data/work/")</font> 00:10 (hr:min)
+
+<font color="blue">***2.5.2.2***</font> GhostKoala cannot accept gene IDs that start with numbers, so the prefix "**genecall**" was added to all AA sequences as follows:
+
+````markdown
+`r ''`{Terminal}
+sed 's/>/>genecall_/g' DNA_data_bbnorm_anvio_gene_calls.faa > DNA_data_bbnorm_anvio_gene_calls_edited.faa
+mv DNA_data_bbnorm_anvio_gene_calls_edited.faa DNA_data_bbnorm_anvio_gene_calls.faa
+
+#EXAMPLE
+[co_assembly]$ head DNA_data_bbnorm_anvio_gene_calls.faa
+>genecall_0
+HALALQRIWQLTPEPQRPEIRARLQALYPRLVKWHRYLATQRDPEASGLVTVYHPWESTDNSPRWDRSLARIEVVKPRPYTRLDTRQVRDPSQRPTDWDY
+````
+
+<font color="blue">***2.5.2.3***</font> Check the "**DNA_data_bbnorm_anvio_gene_calls.faa**" file for empty sequences and remove them prior to submitting to GhostKoala for annotation
+
+  - ***NOTE:*** *Empty sequences are often found at the end of the "**\*.faa**" file (use "tail" command to view the last 20 lines)*
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+tail DNA_data_bbnorm_anvio_gene_calls.faa
+
+#EXAMPLE
+[co_assembly]$ tail DNA_subset_anvio_gene_calls.faa
+genecall_3917613
+MRVXSXLRVNAGGVDKSCKSRGPARATGRRGSNTXVRPLXSGIASRKVGXFPIVPQGXRFFALGAACVVSASWXGNGLPRLRRLGELRGXPPPMELRHGPYSYGRLQTRIFRNGRKSDGA
+TPRDRXSASVRKDLLSGTKFIDGTRXIRGSXLCASRSGNTEAPSITRNHWAXRVSRRPYXSLVKSVGSTCGLRGKRYGSRAXEVHGTHGGGVKSVDIMGNTKGEGNALVRSXRSNTKARV
+ANGIRYPGSPGPQRCSLVLRSIDPLXDXANAVSEPPGXYDRKIKTQRNRRGLAQAVDYAAXFVGKRRTLPRLEIQLHPTXKGRSLRGCWTGDAWSSSVRGLNCSLQWGNERNPRCLLPIW
+PGETAPSRERKVGMTPDQHVPLIPWAARIIQWSVQQVAMPXGGANPYKTDPSTDXGLQPTSXSRNRXXSRVSQTGVNTFSSLVLTARQVKGVGGARRTASRSTTANSMTRTKSXQGTGSG
+SCSWNIS
+>genecall_3917614
+
+>genecall_3917615
+````
+
+- Use the following script to remove all empty sequences from the "**DNA_data_bbnorm_anvio_gene_calls.faa**" file:
+
+````markdown
+`r ''`{Terminal}
+sed '/^>/ {N; /\n$/d}' DNA_data_bbnorm_anvio_gene_calls.faa > DNA_data_bbnorm_anvio_gene_calls_clean.faa
+mv DNA_data_bbnorm_anvio_gene_calls_clean.faa DNA_data_bbnorm_anvio_gene_calls.faa
+
+#EXAMPLE
+[co_assembly]$ tail DNA_data_bbnorm_anvio_gene_calls.faa
+>genecall_2337739
+AHLTRLETRTKEFNMRASRWDEKPAGRVKASHSVTLCIGEIPSLVRKHEPGASPAHHKLTWLWWSLSVHVETRKMVNYAWAGXSQGKLWWRSVAILTCKSIVXPGYRGERLIEPSSSWFP
+PKFPSGXLALGNAVLPGKANDXRPWGRNDLNLFSNFKWVRSPACLNAKLKSGRWIRAPSGPLLVSRTGAVGXTERXVMAPDETLMRSQKRCWLLXTAGRWPWKSEPAKECVTTHLPKQLA
+LKMDGARASGLYSAVAAVNKXNSHAATSRRVAAVASKAYGREPGWSRRRCRSWWXXQILKREPXGLKWRRVPCEQQLNMGQSILRYRRKPFRSGVDSVIYWRWLLXLASRLFRSIPPHLP
+KGNRVNIPEPGIGYDAGGGRAHLRHSCRATNAATQMNSETLTRALERVVFSSXGTGSLESDHPAIGRWCPXSTAVLAVSGAHVSVLETPRESVIFVPDRTHIRSRSPRXIASRPLEACRX
+GKSAKWICNFGKKIGSEGWAGRAAVGSCRGFGGGPVLWLWSRRESAVYCGRARTSAGAXQWTAVAALPRGVFSVSATSFGAXQPTQNWHGPGESDCLIKTKHCDGWXSVLTQCDFCPVLX
+MSKXRNSTKRGXTAGVTMTLLRXPNASSSNXXRAXMDQRDSHCPYLLSSETTAKGTGLAESAGKEDPVELDSSLTRXGDMRGVAXVGGSASCRQXNTTTFIVSLLIQXCGVWLLVARKNR
+GAATILALTRTDLFRPRIRSDDSVRRGVXLGRYICQTVTQVSXGKLSEDRNLAXSKRAKACLILIFSTNTDRESVAYRSFXLXEFXARGVRKVTTGITGLWRPSVHSDVAFXSFDVGSSY
+HCDAAVAKRRIVHPLIGNVSWVXTVVRQVSFTLLM
+>genecall_2337745
+QANKCMWWMPWRSQAMKDVVACEKSRGASKRALIREYPNGETRPARVTPGXIHRLGRANSVNXNISVTEGTEINRDSGSSGERTRSSQQVLALLLAKRSGKAGQSGXXPRTQKQWCGTRP
+ATSRAGHVKSCLKMGGPSSKAKYSXSTDSEPVPXGKGEKNPGRGVKXILKPHAYKKSEPLLYXSSRVLSRSDARAARLKRLIDEIDPLVASLTXKIRVVLGIDDRSVGDALRVAQCGNTA
+SLSRASKPXGLRSEGQXSRGDGVPFVXWVSDLHSVASLSESAGAGKPSPNRANELLGVDPKPDDLLMARMKVRXHALEVRTHXCXKIRGXAVGRGERLNKSGNSWFSPKTIXVVPHVLLL
+GVEHCYGXGVMATYQTIANSEYWQVXAWETVTGCXRPVSRGKQPGPPAKVPKYSXVGNEVGRRKQSGGWLRSSHPLKKAXXLTDRVVLRGRCNGAQTRHRSXGC
+````
+
+<font color="blue">***2.5.2.4***</font> GhostKoala also has a max file size limit of 300 MB, so files larger than the max file size were split into smaller files and the annotations were run in batches with the results concatenated prior to being added into Anvi'o.
+
+To split the data into smaller files:
+
+- Download "**DNA_datat_bbnorm_anvio_gene_calls.faa**" (724,306,331 bytes) to local directory and open with text editor (*BBEdit preferred*)
+- Select a third of the data to cut from the file (⌘X) -- *Ensure that a gene sequence is NOT cut in half* -- Start with a **"genecall_\*"**
+- Open a new text file and paste (⌘V) the cut data from the original file (*repeated with the second third of data and with the final third of data*).
+- Renam the three files as follows:
+  - "**DNA_data_bbnorm_anvio_gene_calls_1.faa**" 237,613,185 (237.6 MB)
+  - "**DNA_data_bbnorm_anvio_gene_calls_2.faa**" 246,043,256 (246.0 MB)
+  - "**DNA_data_bbnorm_anvio_gene_calls_3.faa**" 240,649,888 (240.7 MB)
+- Check that all files were less than 300 MB in size
+  
+<font color="blue">***2.5.2.5***</font> Submit the amino acid files for both functional and taxonomic annotation in [KEGG GhostKoala](https://www.kegg.jp/ghostkoala/)
+
+- Only ONE "**.faa**" file can be submitted at a time for annotation
+- Use "**genus_prokaryotes + family_eukaryotes**" annotation option
+  - "**DNA_data_bbnorm_anvio_gene_calls_1.faa**" (237.6 MB)
+    - Upload time to GhostKoala 0:10 (hr:min) -- Processing time at GhostKoala 42:24 (hr:min)
+  - "**DNA_data_bbnorm_anvio_gene_calls_2.faa**" (246.0 MB)
+    - Upload time to GhostKoala 0:10 (hr:min) -- Processing time at GhostKoala 46:30 (hr:min)
+  - "**DNA_data_bbnorm_anvio_gene_calls_3.faa**" (240.7 MB)
+    - Upload time to GhostKoala 0:14 (hr:min) -- Processing time at GhostKoala 33:33 (hr:min)
+- Result files were as follows:
+  - "**user_ko.txt**" Functional annotations file
+  - "**user.out.top**" Taxonomic annotations file
+
+<font color="blue">**2.5.3**</font> Import Functional & Taxonomic Annotations into the Contigs Database
+
+- Add the concatenated annotation files from GhostKoala to the <font color="green">"/DNA_data/work/co_assembly"</font> directory
+  - "**user_ko.txt**"
+  - "**user.out.top**"
+- Copy the following files into the <font color="green">"/DNA_data/work/co_assembly"</font> directory
+- No changes were needed to be made to the internal python scripts -- They were run as written
+  - "**KEGG-to-anvio**"
+  - "**KO_Orthology_ko00001.txt**"
+  - "**GhostKOALA-taxonomy-to-anvio**"
+
+<font color="blue">***2.5.3.1***</font> Parse the functional annotations into a format readable by Anvi'o
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+python2 KEGG-to-anvio --KeggDB KO_Orthology_ko00001.txt -i user_ko.txt -o KeggAnnotations.txt
+````
+
+<font color="blue">***2.5.3.2***</font> Import the functional annotations into the contigs database:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+anvi-import-functions -c DNA_data_bbnorm_anvio_contigs.db -i KeggAnnotations.txt
+
+#Output
+Gene functions ...............................: 1389518 function calls from 1 sources for 1389518 unique gene calls has been added to the contigs database.
+````
+
+<font color="blue">***2.5.3.3***</font> Parse the taxonomy annotations into a format readable by Anvi'o
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_subset/work/co_assembly
+python GhostKOALA-taxonomy-to-anvio user.out.top KeggTaxonomy.txt
+````
+
+<font color="blue">***2.5.3.4***</font> Import the taxonomic annotations into the contigs database
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/co_assembly
+anvi-import-taxonomy-for-genes -c DNA_data_bbnorm_anvio_contigs.db -p default_matrix -i KeggTaxonomy.txt
+
+#Output
+Total num hits found .........................: 3,908,828
+Num gene caller ids in the db ................: 3,917,616                       
+Num gene caller ids in the incoming data .....: 3,908,828
+Taxon names table ............................: Updated with 1672 unique taxon names
+Genes taxonomy table .........................: Taxonomy stored for 3908828 gene calls
+Splits taxonomy ..............................: Input data from "default_matrix" annotated 2458900 of 2492445 splits (98.7%) with taxonomy.
+````
+
+<font color="blue">**2.5.4**</font> Import Sample Mapping Information into an Anvi'o Profile
+
+- Import the mapping information from the "**Sample_\*.final.contigs.fixed.sorted.bam**" into an Anvi'o profile
+- The `BAM` files are already sorted and indexed (*i.e., for each ".bam" file there is also a "**.bam.bai**" file in the same directory*) -- Skip the initializing step and create an Anvi’o profile for the samples
+
+<font color="blue">***2.5.4.1***</font> Move the following files to the <font color="green">"/DNA_data/work/mapping"</font> directory
+  
+  - <font color="green">"/DNA_data/work/mapping/*_mapped_reads/"</font>
+    - "**Sample_\*.final.contigs.fixed.bbnorm.sorted.bam**" 
+    - "**Sample_\*.final.contigs.fixed.bbnorm.sorted.bam.bai**"
+  - Repeat for all samples
+
+<font color="blue">***2.5.4.2***</font> Import the mapping information (per Sample) into separate (per Sample) Anvi'o profiles
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/mapping
+anvi-profile -i Sample_107104.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107104_profile/ --sample-name Profile_107104 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107105.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107105_profile/ --sample-name Profile_107105 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107106.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107106_profile/ --sample-name Profile_107106 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107107.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107107_profile/ --sample-name Profile_107107 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107108.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107108_profile/ --sample-name Profile_107108 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107110.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107110_profile/ --sample-name Profile_107110 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107111.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107111_profile/ --sample-name Profile_107111 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107112.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107112_profile/ --sample-name Profile_107112 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107113.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107113_profile/ --sample-name Profile_107113 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107114.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107114_profile/ --sample-name Profile_107114 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107115.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107115_profile/ --sample-name Profile_107115 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107116.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107116_profile/ --sample-name Profile_107116 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107117.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107117_profile/ --sample-name Profile_107117 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107119.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107119_profile/ --sample-name Profile_107119 --min-contig-length 2500 --num-threads 20
+anvi-profile -i Sample_107121.final.contigs.fixed.bbnorm.sorted.bam -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o anvio_107121_profile/ --sample-name Profile_107121 --min-contig-length 2500 --num-threads 20
+````
+**DNA.data.bbnorm.anvio.mapping.profile.pbs** <font color="green">("/DNA_data/work/")</font> 05:16:51 (day:hr:min)
+
+<font color="blue">***2.5.4.3***</font> Merge the Sample profiles into a single Anvi'o profile database
+
+- Rename the "**PROFILE.db**" within each <font color="green">"anvio_\*_profile"</font> directory to include the SampleID
+  - <font color="green">"/DNA_data/work/mapping/anvio_107104_profile/"</font>
+    - "**PROFILE_107104.db**"
+  - <font color="green">"/DNA_data/work/mapping/anvio_107105_profile/"</font>
+    - "**PROFILE_107105.db**"
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/mapping
+anvi-merge anvio_107104_profile/PROFILE_107104.db anvio_107105_profile/PROFILE_107105.db anvio_107106_profile/PROFILE_107106.db anvio_107107_profile/PROFILE_107107.db anvio_107108_profile/PROFILE_107108.db anvio_107110_profile/PROFILE_107110.db anvio_107111_profile/PROFILE_107111.db anvio_107112_profile/PROFILE_107112.db anvio_107113_profile/PROFILE_107113.db anvio_107114_profile/PROFILE_107114.db anvio_107115_profile/PROFILE_107115.db anvio_107116_profile/PROFILE_107116.db anvio_107117_profile/PROFILE_107117.db anvio_107119_profile/PROFILE_107119.db anvio_107121_profile/PROFILE_107121.db -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -o merged_profile/
+````
+**DNA.data.bbnorm.anvio.mapping.profile.merge.pbs** <font color="green">("/DNA_data/work/")</font> 01:45 (hr:min)
+
+***NOTE:*** *After the profiles were merged, Anvi'o automatically started binning the contigs using CONCOCT.  It also attempted to cluster the contigs using its own hierarchical clustering algorithm, but it did NOT generate bins from this clustering information; they were manually drawn later. The clustering algorithm was limited to datasets with 20,000 splits or fewer (which disqualifies most complex assemblies).*
+
+- Results were in a new directory (<font color="green">"DNA_data/work/mapping/merged_profile"</font>) with the following files:
+  - "**AUXILIARY-DATA.db**"
+  - "**PROFILE.db**" *This is the merged profile database*
+  - "**RUNLOG.txt**"
+
+### 2.6. Binning MAGs
+
+***Binning Using Multiple Binning Software Algorithms (Smith: CONCOCT, MetaBAT, DASTool)***
+
+The next step is to export the split sequences and their differential coverage across all samples from the merged profile and use these splits in a series of binning algorithms external to Anvi'o.
+
+- The benefit to doing this is that some algorithm strategies work better for certain organisms over others and there does **NOT** appear to be a perfect strategy that works *best* for every organism
+- MetaBAT instructions are ncluded here and supplement the bins derived from CONCOCT through Anvi'o
+- DASTool is then used to chose the best set of non-redundant bins from the multiple binning algorithms
+
+<font color="blue">**2.6.1**</font> Export Split Sequences and Differential Coverage Data for Binning
+
+- Use Anvi'o to export the split sequences and differential coverage data necessary for external binners
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/mapping
+anvi-export-splits-and-coverages -p merged_profile/PROFILE.db -o merged_profile/ -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -O DNA_data_bbnorm_assembly --splits-mode
+````
+00:05 (hr:min)
+
+- The following two files will be generated in the <font color="green">"DNA_data/work/mapping/merged_profile"</font> directory:
+  - "**DNA_data_bbnorm_assembly-SPLITS.fa**" *Contains the split sequences*
+  - "**DNA_data_bbnorm_assembly-COVs.txt**" *Tab-delimited file containing the average coverage of each split in each sample*
+
+<font color="blue">**2.6.2**</font> Binning Splits with MetaBAT
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/mapping/merged_profile
+comics -- metabat -i DNA_data_bbnorm_assembly-SPLITS.fa -o Bin -a DNA_data_bbnorm_assembly-COVs.txt --minContig 2500 --cvExt -t 20 --saveCls --onlyLabel -v
+````
+00:22 (hr:min)
+
+- The output of MetaBAT will be a "Bin.\*" file for each bin that contains a list of the splits assigned to that bin
+  - **NO** bin fasta files are generated -- all splits are already saved in the Anvi'o contigs database
+
+- Create a new directory <font color="green">"DNA_data/work/binning"</font> and within create a MetaBAT directory <font color="green">"DNA_data/work/binning/metabat"</font>
+- Move all "Bin.\*" files from the <font color="green">"DNA_data/work/mapping/merged_profile"</font> directory to the <font color="green">"DNA_data/work/binning/metabat"</font> directory
+
+<font color="blue">***2.6.2.1***</font> Now make the **"Metabat_binning_results.txt"** file from the MetaBAT output to save it as a collection in Anvi'o
+
+- Invoking the following shell script in the directory containing the MetaBAT output:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/binning/metabat
+sh /DNA_data/work/Metabat_to_anvio_parser.sh
+````
+00:01 (hr:min)
+
+- The output will be a tab-delimited text file named "**Metabat_binning_results.txt**" containing the split names and the bins they have been assigned to
+
+<font color="blue">***2.6.2.2***</font> Next, import this information into Anvi'o, saving it as the MetaBAT bin collection:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/binning/metabat
+anvi-import-collection -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -p /DNA_data/work/mapping/merged_profile/PROFILE.db -C METABAT Metabat_binning_results.txt
+
+#Output
+Item names in input ..........................: 112,957
+Num bins in input ............................: 165
+Items in profile database ....................: 131,074
+Item names shared between input and db .......: 112,957
+
+WARNING
+===============================================
+18117 item(s) that were in the database, but were not in the input file, will
+not be described by any bin in the collection METABAT. That is totally fine, but
+anvi'o hopes that you are aware of that. This means you have more things in your
+database than the number of things your input file describes. Here is an example
+of something that is in your database but not in any bin in your input file:
+k255_691935_flag_1_multi_13.0000_len_2643_split_00001.
+
+Collections ..................................: The collection "METABAT" that describes 112,957 splits and 165 bins has been successfully added to the database at "/DNA_data/work/mapping/merged_profile/PROFILE.db". Here is a list of the first 50 bin names in this collection: Bin_1,Bin_10,Bin_100,Bin_101,Bin_102,Bin_103,Bin_104,Bin_105,Bin_106,Bin_107,Bin_108,Bin_109,Bin_11,Bin_110,Bin_111,Bin_112,Bin_113,Bin_114,Bin_115,Bin_116,Bin_117,Bin_118,Bin_119,Bin_12,Bin_120,Bin_121,Bin_122,Bin_123,Bin_124,Bin_125,Bin_126,Bin_127,Bin_128,Bin_129,Bin_13,Bin_130,Bin_131,Bin_132,Bin_133,Bin_134,Bin_135,Bin_136,Bin_137,Bin_138,Bin_139,Bin_14,Bin_140,Bin_141,Bin_142,Bin_143
+````
+00:01 (hr:min)
+
+- Now there are two bin collections saved in one profile database, preventing redundant copying of sequence data and storing everything in one central location that is easily accessed
+
+<font color="blue">**2.6.3**</font> Enter this command to view the different collections in the profile database:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/mapping/merged_profile
+anvi-show-collections-and-bins -p PROFILE.db
+
+#Output
+Collection: "CONCOCT"
+===============================================
+Collection ID ................................: CONCOCT
+Number of bins ...............................: 74
+Number of splits described ...................: 131,074
+Bin names ....................................: Bin_1, Bin_10, Bin_11, Bin_12, Bin_13, Bin_14, Bin_15, Bin_16, Bin_17, Bin_18, Bin_19, Bin_2, Bin_20, Bin_21, Bin_22, Bin_23, Bin_24, Bin_25, Bin_26, Bin_27, Bin_28, Bin_29, Bin_3, Bin_30, Bin_31, Bin_32, Bin_33, Bin_34, Bin_35, Bin_36, Bin_37, Bin_38, Bin_39, Bin_4, Bin_40, Bin_41, Bin_42, Bin_43, Bin_44, Bin_45, Bin_46, Bin_47, Bin_48, Bin_49, Bin_5, Bin_50, Bin_51, Bin_52, Bin_53, Bin_54, Bin_55, Bin_56, Bin_57, Bin_58, Bin_59, Bin_6, Bin_60, Bin_61, Bin_62, Bin_63, Bin_64, Bin_65, Bin_66, Bin_67, Bin_68, Bin_69, Bin_7, Bin_70, Bin_71, Bin_72, Bin_73, Bin_74, Bin_8, Bin_9
+
+
+
+Collection: "METABAT"
+===============================================
+Collection ID ................................: METABAT
+Number of bins ...............................: 165
+Number of splits described ...................: 112,957
+Bin names ....................................: Bin_1, Bin_10, Bin_100, Bin_101, Bin_102, Bin_103, Bin_104, Bin_105, Bin_106, Bin_107, Bin_108, Bin_109, Bin_11, Bin_110, Bin_111, Bin_112, Bin_113, Bin_114, Bin_115, Bin_116, Bin_117, Bin_118, Bin_119, Bin_12, Bin_120, Bin_121, Bin_122, Bin_123, Bin_124, Bin_125, Bin_126, Bin_127, Bin_128, Bin_129, Bin_13, Bin_130, Bin_131, Bin_132, Bin_133, Bin_134, Bin_135, Bin_136, Bin_137, Bin_138, Bin_139, Bin_14, Bin_140, Bin_141, Bin_142, Bin_143, Bin_144, Bin_145, Bin_146, Bin_147, Bin_148, Bin_149, Bin_15, Bin_150, Bin_151, Bin_152, Bin_153, Bin_154, Bin_155, Bin_156, Bin_157, Bin_158, Bin_159, Bin_16, Bin_160, Bin_161, Bin_162, Bin_163, Bin_164, Bin_165, Bin_17, Bin_18, Bin_19, Bin_2, Bin_20, Bin_21, Bin_22, Bin_23, Bin_24, Bin_25, Bin_26, Bin_27, Bin_28, Bin_29, Bin_3, Bin_30, Bin_31, Bin_32, Bin_33, Bin_34, Bin_35, Bin_36, Bin_37, Bin_38, Bin_39, Bin_4, Bin_40, Bin_41, Bin_42, Bin_43, Bin_44, Bin_45, Bin_46, Bin_47, Bin_48, Bin_49, Bin_5, Bin_50, Bin_51, Bin_52, Bin_53, Bin_54, Bin_55, Bin_56, Bin_57, Bin_58, Bin_59, Bin_6, Bin_60, Bin_61, Bin_62, Bin_63, Bin_64, Bin_65, Bin_66, Bin_67, Bin_68, Bin_69, Bin_7, Bin_70, Bin_71, Bin_72, Bin_73, Bin_74, Bin_75, Bin_76, Bin_77, Bin_78, Bin_79, Bin_8, Bin_80, Bin_81, Bin_82, Bin_83, Bin_84, Bin_85, Bin_86, Bin_87, Bin_88, Bin_89, Bin_9, Bin_90, Bin_91, Bin_92, Bin_93, Bin_94, Bin_95, Bin_96, Bin_97, Bin_98, Bin_99
+````
+
+- Should see a list of bins in two collections, one named “CONCOCT” and another named “METABAT”
+
+<font color="blue">**2.6.4**</font> DASTools
+
+- Decide which bins are the best from the two redundant bin datasets (generated with multiple binning algorithms) and dereplicate the bins into a final bin dataset using DASTool
+  - The input for DAStool are the same binning results files used to import bin collections into the Anvi'o profile database
+
+- Get the binning results file for CONCOCT by exporting the information from anvio:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/binning/concoct
+anvi-export-collection -p /DNA_data/work/mapping/merged_profile/PROFILE.db -C CONCOCT -O CONCOCT_binning_results
+````
+
+- Create a <font color="green">"DNA_subset/work/binning/dastool"</font> directory
+- Move the CONCOCT and MetaBAT summary text files into the <font color="green">"/dastool"</font> directory
+  - "**CONCOCT_binning_results.txt**"
+  - "**Metabat_binning_results.txt**"
+
+- Now, invoke DASTool
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/binning/dastool
+comics das-tool -i CONCOCT_binning_results.txt,Metabat_binning_results.txt -l concoct,metabat -c /DNA_data/work/mapping/merged_profile/DNA_data_bbnorm_assembly-SPLITS.fa -o DASTool_bins --search_engine blast --threads 20
+````
+00:20 (hr:min)
+
+- The output needed is the "**DASTool_bins_DASTool_scaffolds2bin.txt**" file (same file structure as previous "\*_binning_results.txt" files)
+- Just like before, use the DASTool binning results file to import the DASTool bins as a collection into Anvi'o, but first change some periods to undescores in DASTool bin names (Anvi'o doesn’t like periods):
+
+````markdown
+`r ''`{Terminal}
+sed 's/results\./results_/g' DASTool_bins_DASTool_scaffolds2bin.txt > DASTool_binning_results.txt
+sed 's/updated\./updated_/g' DASTool_binning_results.txt > DASTool_binning_results2.txt
+mv DASTool_binning_results2.txt DASTool_binning_results.txt
+````
+
+- Now import the DASTool bin collection into the merged_profile database:
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/binning/dastool
+anvi-import-collection -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -p /DNA_data/work/mapping/merged_profile/PROFILE.db -C DASTool DASTool_binning_results.txt
+
+#Output DASTool
+Item names in input ..........................: 31,479
+Num bins in input ............................: 58
+Items in profile database ....................: 131,074
+Item names shared between input and db .......: 31,479
+
+WARNING
+===============================================
+99595 item(s) that were in the database, but were not in the input file, will
+not be described by any bin in the collection DASTool. That is totally fine, but
+anvi'o hopes that you are aware of that. This means you have more things in your
+database than the number of things your input file describes. Here is an example
+of something that is in your database but not in any bin in your input file:
+k255_2221878_flag_1_multi_9.0000_len_4003_split_00001.
+
+Collections ..................................: The collection "DASTool" that describes 31,479 splits and 58 bins has been successfully added to the database at "/DNA_data/work/mapping/merged_profile/PROFILE.db". Here is a list of the first 50 bin names in this collection: Metabat_binning_results_011,Metabat_binning_results_090,Metabat_binning_results_136,Metabat_binning_results_071,Metabat_binning_results_027,Metabat_binning_results_163,Metabat_binning_results_142,Metabat_binning_results_074,Metabat_binning_results_031,Metabat_binning_results_106,Metabat_binning_results_056,Metabat_binning_results_089,Metabat_binning_results_078,CONCOCT_binning_results_070,Metabat_binning_results_046,CONCOCT_binning_results_062,Metabat_binning_results_064,Metabat_binning_results_110,Metabat_binning_results_083,Metabat_binning_results_159,Metabat_binning_results_132,Metabat_binning_results_055,Metabat_binning_results_073,Metabat_binning_results_080,Metabat_binning_results_160,Metabat_binning_results_081,CONCOCT_binning_results_023,Metabat_binning_results_044,Metabat_binning_results_153,CONCOCT_binning_results_060,Metabat_binning_results_161,Metabat_binning_results_148,Metabat_binning_results_060,Metabat_binning_results_068,Metabat_binning_results_137,Metabat_binning_results_032,Metabat_binning_results_145,Metabat_binning_results_033,Metabat_binning_results_165,CONCOCT_binning_results_053,CONCOCT_binning_results_055,Metabat_binning_results_029,Metabat_binning_results_036,Metabat_binning_results_088,Metabat_binning_results_069,CONCOCT_binning_results_056,Metabat_binning_results_014,Metabat_binning_results_024,Metabat_binning_results_023,CONCOCT_binning_results_071.
+````
+
+- The final step is to export the bin stats summary file for DASTools
+
+````markdown
+`r ''`{Terminal}
+cd /DNA_data/work/binning/dastool
+anvi-script-get-collection-info -c /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db -p /DNA_data/work/mapping/merged_profile/PROFILE.db -C DASTool -o DNA_data_bbnorm_DASTool_summary.txt
+
+#Output
+Contigs DB ...................................: Initialized: /DNA_data/work/co_assembly/DNA_data_bbnorm_anvio_contigs.db (v. 12)
+
+* Completion and redundancy estimates. PC: Percent completion; PR: Percent
+redundancy; N: Number of splits; L: Length (total number of nucleotides); D:
+Domain for single-copy core genes; C: Domain confidence.
+
+
+Bins in collection "DASTool"
+===============================================
+Metabat_binning_results_011 :: PC: 93.53%, PR: 3.60%, N: 352, L: 3,138,665, D: bacteria (C: 0.90)
+Metabat_binning_results_090 :: PC: 98.56%, PR: 6.47%, N: 1,023, L: 6,681,655, D: bacteria (C: 0.92)
+
+Metabat_binning_results_136 :: PC: 91.36%, PR: 10.49%, N: 221, L: 1,613,215, D: archaea (C: 0.81)
+
+Metabat_binning_results_071 :: PC: 97.12%, PR: 0.72%, N: 378, L: 2,723,137, D: bacteria (C: 0.96)
+Metabat_binning_results_027 :: PC: 88.49%, PR: 3.60%, N: 382, L: 2,641,710, D: bacteria (C: 0.85)
+Metabat_binning_results_163 :: PC: 89.93%, PR: 6.47%, N: 1,093, L: 5,731,451, D: bacteria (C: 0.83)
+Metabat_binning_results_142 :: PC: 80.58%, PR: 3.60%, N: 575, L: 3,918,295, D: bacteria (C: 0.77)
+
+Metabat_binning_results_074 :: PC: 89.93%, PR: 10.07%, N: 758, L: 3,672,582, D: bacteria (C: 0.80)
+
+Metabat_binning_results_031 :: PC: 92.81%, PR: 9.35%, N: 540, L: 2,714,627, D: bacteria (C: 0.83)
+Metabat_binning_results_106 :: PC: 87.77%, PR: 2.16%, N: 426, L: 2,639,223, D: bacteria (C: 0.86)
+Metabat_binning_results_056 :: PC: 90.65%, PR: 3.60%, N: 295, L: 2,133,681, D: bacteria (C: 0.87)
+Metabat_binning_results_089 :: PC: 95.68%, PR: 2.88%, N: 622, L: 4,758,373, D: bacteria (C: 0.93)
+Metabat_binning_results_078 :: PC: 84.89%, PR: 5.76%, N: 463, L: 3,046,540, D: bacteria (C: 0.79)
+CONCOCT_binning_results_070 :: PC: 82.73%, PR: 2.16%, N: 286, L: 1,851,259, D: bacteria (C: 0.81)
+Metabat_binning_results_046 :: PC: 88.89%, PR: 9.26%, N: 206, L: 1,536,975, D: archaea (C: 0.80)
+CONCOCT_binning_results_062 :: PC: 82.01%, PR: 0.72%, N: 160, L: 1,468,490, D: bacteria (C: 0.81)
+Metabat_binning_results_064 :: PC: 94.96%, PR: 5.04%, N: 537, L: 3,258,934, D: bacteria (C: 0.90)
+Metabat_binning_results_110 :: PC: 74.82%, PR: 7.91%, N: 298, L: 1,408,896, D: bacteria (C: 0.67)
+Metabat_binning_results_083 :: PC: 82.01%, PR: 6.47%, N: 331, L: 2,095,666, D: bacteria (C: 0.76)
+Metabat_binning_results_159 :: PC: 90.65%, PR: 9.35%, N: 967, L: 5,724,953, D: bacteria (C: 0.81)
+Metabat_binning_results_132 :: PC: 85.61%, PR: 5.04%, N: 939, L: 6,046,501, D: bacteria (C: 0.81)
+
+Metabat_binning_results_055 :: PC: 83.45%, PR: 10.07%, N: 882, L: 6,560,778, D: bacteria (C: 0.73)
+
+Metabat_binning_results_073 :: PC: 76.98%, PR: 5.04%, N: 375, L: 2,246,106, D: bacteria (C: 0.72)
+Metabat_binning_results_080 :: PC: 71.94%, PR: 3.60%, N: 425, L: 2,414,552, D: bacteria (C: 0.68)
+
+Metabat_binning_results_160 :: PC: 81.29%, PR: 12.95%, N: 1,198, L: 6,308,300, D: bacteria (C: 0.68)
+Metabat_binning_results_081 :: PC: 92.09%, PR: 28.78%, N: 410, L: 2,897,091, D: bacteria (C: 0.63)
+
+CONCOCT_binning_results_023 :: PC: 82.01%, PR: 4.32%, N: 251, L: 2,614,541, D: bacteria (C: 0.78)
+Metabat_binning_results_044 :: PC: 74.10%, PR: 5.04%, N: 921, L: 4,823,662, D: bacteria (C: 0.69)
+
+Metabat_binning_results_153 :: PC: 95.68%, PR: 23.02%, N: 500, L: 4,519,044, D: bacteria (C: 0.73)
+
+CONCOCT_binning_results_060 :: PC: 64.03%, PR: 3.60%, N: 1,040, L: 6,178,783, D: bacteria (C: 0.60)
+
+Metabat_binning_results_161 :: PC: 74.82%, PR: 7.19%, N: 578, L: 2,580,286, D: bacteria (C: 0.68)
+Metabat_binning_results_148 :: PC: 74.10%, PR: 2.16%, N: 629, L: 2,786,980, D: bacteria (C: 0.72)
+Metabat_binning_results_060 :: PC: 74.82%, PR: 10.79%, N: 1,144, L: 7,848,862, D: bacteria (C: 0.64)
+Metabat_binning_results_068 :: PC: 95.68%, PR: 20.14%, N: 315, L: 2,011,285, D: bacteria (C: 0.76)
+Metabat_binning_results_137 :: PC: 78.42%, PR: 5.04%, N: 627, L: 2,870,570, D: bacteria (C: 0.73)
+Metabat_binning_results_032 :: PC: 83.45%, PR: 11.51%, N: 403, L: 2,158,177, D: bacteria (C: 0.72)
+Metabat_binning_results_145 :: PC: 61.15%, PR: 0.72%, N: 292, L: 1,433,337, D: bacteria (C: 0.60)
+Metabat_binning_results_033 :: PC: 65.47%, PR: 12.23%, N: 447, L: 1,848,022, D: bacteria (C: 0.53)
+Metabat_binning_results_165 :: PC: 84.17%, PR: 9.35%, N: 742, L: 5,587,269, D: bacteria (C: 0.75)
+CONCOCT_binning_results_053 :: PC: 76.26%, PR: 5.04%, N: 690, L: 3,224,356, D: bacteria (C: 0.71)
+CONCOCT_binning_results_055 :: PC: 51.08%, PR: 1.44%, N: 639, L: 2,558,984, D: bacteria (C: 0.50)
+Metabat_binning_results_029 :: PC: 72.66%, PR: 5.04%, N: 431, L: 2,187,888, D: bacteria (C: 0.68)
+Metabat_binning_results_036 :: PC: 97.12%, PR: 28.06%, N: 940, L: 5,554,480, D: bacteria (C: 0.69)
+Metabat_binning_results_088 :: PC: 47.48%, PR: 0.72%, N: 137, L: 581,347, D: bacteria (C: 0.47)
+Metabat_binning_results_069 :: PC: 55.40%, PR: 0.00%, N: 208, L: 1,986,284, D: bacteria (C: 0.55)
+CONCOCT_binning_results_056 :: PC: 69.06%, PR: 5.04%, N: 1,111, L: 5,337,967, D: bacteria (C: 0.64)
+Metabat_binning_results_014 :: PC: 65.47%, PR: 5.76%, N: 445, L: 1,921,245, D: bacteria (C: 0.60)
+Metabat_binning_results_024 :: PC: 61.15%, PR: 4.32%, N: 623, L: 2,618,168, D: bacteria (C: 0.57)
+Metabat_binning_results_023 :: PC: 56.12%, PR: 2.16%, N: 441, L: 2,195,523, D: bacteria (C: 0.54)
+CONCOCT_binning_results_071 :: PC: 54.68%, PR: 4.32%, N: 228, L: 1,652,688, D: bacteria (C: 0.50)
+Metabat_binning_results_070 :: PC: 62.59%, PR: 2.88%, N: 435, L: 1,788,235, D: bacteria (C: 0.60)
+Metabat_binning_results_098 :: PC: 37.41%, PR: 2.88%, N: 536, L: 1,991,384, D: bacteria (C: 0.35)
+Metabat_binning_results_051 :: PC: 83.45%, PR: 7.91%, N: 248, L: 1,789,108, D: bacteria (C: 0.76)
+Metabat_binning_results_164 :: PC: 60.43%, PR: 1.44%, N: 338, L: 1,807,394, D: bacteria (C: 0.59)
+Metabat_binning_results_012 :: PC: 43.88%, PR: 5.76%, N: 173, L: 774,389, D: bacteria (C: 0.38)
+Metabat_binning_results_155 :: PC: 49.64%, PR: 3.60%, N: 671, L: 2,670,480, D: bacteria (C: 0.46)
+Metabat_binning_results_043 :: PC: 38.85%, PR: 2.16%, N: 474, L: 1,863,523, D: bacteria (C: 0.37)
+Metabat_binning_results_085 :: PC: 66.19%, PR: 10.79%, N: 680, L: 4,255,822, D: bacteria (C: 0.55)
+
+Output .......................................: DNA_data_bbnorm_DASTool_summary.txt
+````
+
+- Now, select only those bins that are > 70% complete and < 10% redundant as the final **Metagenome Assembled Genomes** (MAGs) dataset
+
+````markdown
+`r ''`{Terminal}
+Bins in collection "DASTool" to keep (PC > 70% | PR < 10%) -- 30 Bins
+==========================================================
+Metabat_binning_results_011 :: PC: 93.53%, PR: 3.60%, N: 352, L: 3,138,665, D: bacteria (C: 0.90)
+Metabat_binning_results_090 :: PC: 98.56%, PR: 6.47%, N: 1,023, L: 6,681,655, D: bacteria (C: 0.92)
+Metabat_binning_results_071 :: PC: 97.12%, PR: 0.72%, N: 378, L: 2,723,137, D: bacteria (C: 0.96)
+Metabat_binning_results_027 :: PC: 88.49%, PR: 3.60%, N: 382, L: 2,641,710, D: bacteria (C: 0.85)
+Metabat_binning_results_163 :: PC: 89.93%, PR: 6.47%, N: 1,093, L: 5,731,451, D: bacteria (C: 0.83)
+Metabat_binning_results_142 :: PC: 80.58%, PR: 3.60%, N: 575, L: 3,918,295, D: bacteria (C: 0.77)
+Metabat_binning_results_031 :: PC: 92.81%, PR: 9.35%, N: 540, L: 2,714,627, D: bacteria (C: 0.83)
+Metabat_binning_results_106 :: PC: 87.77%, PR: 2.16%, N: 426, L: 2,639,223, D: bacteria (C: 0.86)
+Metabat_binning_results_056 :: PC: 90.65%, PR: 3.60%, N: 295, L: 2,133,681, D: bacteria (C: 0.87)
+Metabat_binning_results_089 :: PC: 95.68%, PR: 2.88%, N: 622, L: 4,758,373, D: bacteria (C: 0.93)
+Metabat_binning_results_078 :: PC: 84.89%, PR: 5.76%, N: 463, L: 3,046,540, D: bacteria (C: 0.79)
+CONCOCT_binning_results_070 :: PC: 82.73%, PR: 2.16%, N: 286, L: 1,851,259, D: bacteria (C: 0.81)
+Metabat_binning_results_046 :: PC: 88.89%, PR: 9.26%, N: 206, L: 1,536,975, D: archaea (C: 0.80)
+CONCOCT_binning_results_062 :: PC: 82.01%, PR: 0.72%, N: 160, L: 1,468,490, D: bacteria (C: 0.81)
+Metabat_binning_results_064 :: PC: 94.96%, PR: 5.04%, N: 537, L: 3,258,934, D: bacteria (C: 0.90)
+Metabat_binning_results_110 :: PC: 74.82%, PR: 7.91%, N: 298, L: 1,408,896, D: bacteria (C: 0.67)
+Metabat_binning_results_083 :: PC: 82.01%, PR: 6.47%, N: 331, L: 2,095,666, D: bacteria (C: 0.76)
+Metabat_binning_results_159 :: PC: 90.65%, PR: 9.35%, N: 967, L: 5,724,953, D: bacteria (C: 0.81)
+Metabat_binning_results_132 :: PC: 85.61%, PR: 5.04%, N: 939, L: 6,046,501, D: bacteria (C: 0.81)
+Metabat_binning_results_073 :: PC: 76.98%, PR: 5.04%, N: 375, L: 2,246,106, D: bacteria (C: 0.72)
+Metabat_binning_results_080 :: PC: 71.94%, PR: 3.60%, N: 425, L: 2,414,552, D: bacteria (C: 0.68)
+CONCOCT_binning_results_023 :: PC: 82.01%, PR: 4.32%, N: 251, L: 2,614,541, D: bacteria (C: 0.78)
+Metabat_binning_results_044 :: PC: 74.10%, PR: 5.04%, N: 921, L: 4,823,662, D: bacteria (C: 0.69)
+Metabat_binning_results_161 :: PC: 74.82%, PR: 7.19%, N: 578, L: 2,580,286, D: bacteria (C: 0.68)
+Metabat_binning_results_148 :: PC: 74.10%, PR: 2.16%, N: 629, L: 2,786,980, D: bacteria (C: 0.72)
+Metabat_binning_results_137 :: PC: 78.42%, PR: 5.04%, N: 627, L: 2,870,570, D: bacteria (C: 0.73)
+Metabat_binning_results_165 :: PC: 84.17%, PR: 9.35%, N: 742, L: 5,587,269, D: bacteria (C: 0.75)
+CONCOCT_binning_results_053 :: PC: 76.26%, PR: 5.04%, N: 690, L: 3,224,356, D: bacteria (C: 0.71)
+Metabat_binning_results_029 :: PC: 72.66%, PR: 5.04%, N: 431, L: 2,187,888, D: bacteria (C: 0.68)
+Metabat_binning_results_051 :: PC: 83.45%, PR: 7.91%, N: 248, L: 1,789,108, D: bacteria (C: 0.76)
+````
+
+<font color="blue">**2.6.5**</font> DASTools MAGs Taxonomy
+
+- Now that we've generated the DASTools MAGS collection, our final steps involve assigning taxonomy to each MAG and calculating the relative abundance of each MAG in each metagenome sample.  **The following commands only work with Anvio v6.2.**
+
+````markdown
+`r ''`{Terminal}
+# Downloading taxonomy search databases (only need to do once)
+anvi-setup-scg-databases
+
+# Update contigs database from v12 to v14 (necessary for assigning taxonomy)
+anvi-migrate /2017_Redox/MAGs_DNA/DNA_data_bbnorm_anvio_contigs.db
+
+# Update profile from v30 to v31 (necessary for assigning taxonomy)
+anvi-migrate /2017_Redox/MAGs_DNA/PROFILE.db
+
+# Populate tables with HMM hits (since they will be removed when updating the contigs db from v12 to v14 -- see above)
+anvi-run-hmms -c /2017_Redox/MAGs_DNA/DNA_data_bbnorm_anvio_contigs.db
+
+# Populating contigs db with SCG taxonomy
+anvi-run-scg-taxonomy -c /2017_Redox/MAGs_DNA/DNA_data_bbnorm_anvio_contigs.db
+
+# Estimate taxonomy based on single-copy core genes (SCG) within each MAG
+anvi-estimate-scg-taxonomy -c /2017_Redox/MAGs_DNA/DNA_data_bbnorm_anvio_contigs.db \
+                           -p /2017_Redox/MAGs_DNA/PROFILE.db \
+                           -C DASTool \
+                           --compute-scg-coverages \
+                           --output-file /MAGs.taxa.output.txt
+                           
+### Output
+Contigs DB ...................................: /gpfs/accounts/gwk_root/gwk1/kjromano/2017_Redox/MAGs_DNA/DNA_data_bbnorm_anvio_contigs.db                                                                                                      
+Profile DB ...................................: /gpfs/accounts/gwk_root/gwk1/kjromano/2017_Redox/MAGs_DNA/PROFILE.db
+Metagenome mode ..............................: False
+                                                                                                                                                                                                                                                
+WARNING
+===============================================
+Please note that anvi'o found 2,464,202 splits in your contigs database. But
+only 131,074 of them appeared to be in the profile database. As a result, anvi'o
+will now remove the 2,333,128 splits that occur only in the contigs db from all
+downstream analyses here (if you didn't use the flag `--compute-scg-coverages`
+this wouldn't have been necessary, but with the current settings this is really
+the best for everyone). Where is this difference coming from though? Well. This
+is often the case because the 'minimum contig length parameter' set during the
+`anvi-profile` step can exclude many contigs from downstream analyses (often for
+good reasons, too). For instance, in your case the minimum contig length goes as
+low as 256 nts in your contigs database. Yet, the minimum contig length set in
+the profile databaes is 2,500 nts. Hence the difference. Anvi'o hopes that this
+explaines some things.
+
+                                                                                                                                                                                                                                                
+* 31,479 split names associated with 58 bins of in collection 'DASTool' have been
+successfully recovered 🎊
+                                                                                                                                                                                                                                                
+* Anvi'o will now attempt to recover SCG coverages in GENOME MODE from the profile
+database, which contains 15 samples.
+
+                                                                                                                                                                                                                                                
+FRIENDLY REMINDER
+===============================================
+Anvi'o has just finished recovering SCG coverages from the profile database to
+estimate the average coverage of your bins across your samples. Please note that
+anvi'o SCG taxonomy framework is using only %d SCGs to estimate taxonomy. Which
+means, even a highly complete bin may be missing all of them. In which case, the
+coverage of that bin will be `None` across all your samples. The best way to
+prevent any misleading insights is take these results with a huge grain of salt,
+and use the `anvi-summarize` output for critical applications.
+
+                                                                                                                                                                                                                                                
+Estimated taxonomy for collection "DASTool"
+===============================================
+
+Output file ..................................: /MAGs.taxa.output.txt
+
+✓ anvi-estimate-scg-taxonomy took 0:02:23.726746
+````
+
+
+### 2.7. MG Read Summary
+
+The following table is a summary of the DNA reads by sample and includes **QC Reads**, **Mapped Reads**, and **Average Read Length (bp)**.  All values were derived from the "**Sample_\*.final.contigs.fixed.bbnorm.sorted.bam**" files using `samtools stats`.
+```{r echo=FALSE}
+dna.informatics<-read.table("Table.Data/dna.bioinformatics.table.txt",sep='\t', quote="", fill=TRUE,header = TRUE)
+names(dna.informatics)<-c("ID", "Tundra", "Time", "Replicate", "QC Reads", "Mapped Reads", "Average Length (bp)")
+kable(dna.informatics, caption = "Summary statistics for DNA-based metagenomic sequencing dataset", format.args = list(big.mark = ","), align = "c") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+## 3. Gene Annotations
+
+Following all **Data Bioinformatics** steps above, quality-controlled metagenome reads were extracted using BBMap to generate pile-up files (average read depth per gene), and SAMtools was used to extract counts and CDS lengths from the BBMap output.
+
+### 3.1. Import Gene Counts
+In this section, all `DNA.pileup` files are imported into the R environment and combined into the first **FULL** dataset to be further formatted for downstream statistical analysis.
+
+#### 3.1.1. DNA PileUp Files
+The following `DNA.pileup` files (average read depth per gene) for each metagenome sample were generated via the BBMap module.
+
+```{r}
+#S107104 -- WS_T0_R1
+pileup_107104<-read.table("Pileup.Data/DNA.Pileup/Sample_107104_DNA.pileup", header = TRUE)
+pileup_107104$S107104 <- pileup_107104$Plus_reads + pileup_107104$Minus_reads
+
+#S107105 -- WS_T0_R2
+pileup_107105<-read.table("Pileup.Data/DNA.Pileup/Sample_107105_DNA.pileup", header = TRUE)
+pileup_107105$S107105 <- pileup_107105$Plus_reads + pileup_107105$Minus_reads
+
+#S107106 -- WS_T0_R3
+pileup_107106<-read.table("Pileup.Data/DNA.Pileup/Sample_107106_DNA.pileup", header = TRUE)
+pileup_107106$S107106 <- pileup_107106$Plus_reads + pileup_107106$Minus_reads
+
+#S107110 -- WS_T4_R1
+pileup_107110<-read.table("Pileup.Data/DNA.Pileup/Sample_107110_DNA.pileup", header = TRUE)
+pileup_107110$S107110 <- pileup_107110$Plus_reads + pileup_107110$Minus_reads
+
+#S107111 -- WS_T4_R2
+pileup_107111<-read.table("Pileup.Data/DNA.Pileup/Sample_107111_DNA.pileup", header = TRUE)
+pileup_107111$S107111 <- pileup_107111$Plus_reads + pileup_107111$Minus_reads
+
+#S107112 -- WS_T4_R3
+pileup_107112<-read.table("Pileup.Data/DNA.Pileup/Sample_107112_DNA.pileup", header = TRUE)
+pileup_107112$S107112 <- pileup_107112$Plus_reads + pileup_107112$Minus_reads
+
+#S107113 -- WS_T24_R1
+pileup_107113<-read.table("Pileup.Data/DNA.Pileup/Sample_107113_DNA.pileup", header = TRUE)
+pileup_107113$S107113 <- pileup_107113$Plus_reads + pileup_107113$Minus_reads
+
+#S107114 -- WS_T24_R2
+pileup_107114<-read.table("Pileup.Data/DNA.Pileup/Sample_107114_DNA.pileup", header = TRUE)
+pileup_107114$S107114 <- pileup_107114$Plus_reads + pileup_107114$Minus_reads
+
+#S107115 -- WS_T24_R3
+pileup_107115<-read.table("Pileup.Data/DNA.Pileup/Sample_107115_DNA.pileup", header = TRUE)
+pileup_107115$S107115 <- pileup_107115$Plus_reads + pileup_107115$Minus_reads
+
+#S107107 -- Tuss_T0_R1
+pileup_107107<-read.table("Pileup.Data/DNA.Pileup/Sample_107107_DNA.pileup", header = TRUE)
+pileup_107107$S107107 <- pileup_107107$Plus_reads + pileup_107107$Minus_reads
+
+#S107108 -- Tuss_T0_R2
+pileup_107108<-read.table("Pileup.Data/DNA.Pileup/Sample_107108_DNA.pileup", header = TRUE)
+pileup_107108$S107108 <- pileup_107108$Plus_reads + pileup_107108$Minus_reads
+
+#S107116 -- Tuss_T4_R1
+pileup_107116<-read.table("Pileup.Data/DNA.Pileup/Sample_107116_DNA.pileup", header = TRUE)
+pileup_107116$S107116 <- pileup_107116$Plus_reads + pileup_107116$Minus_reads
+
+#S107117 -- Tuss_T4_R2
+pileup_107117<-read.table("Pileup.Data/DNA.Pileup/Sample_107117_DNA.pileup", header = TRUE)
+pileup_107117$S107117 <- pileup_107117$Plus_reads + pileup_107117$Minus_reads
+
+#S107119 -- Tuss_T24_R1
+pileup_107119<-read.table("Pileup.Data/DNA.Pileup/Sample_107119_DNA.pileup", header = TRUE)
+pileup_107119$S107119 <- pileup_107119$Plus_reads + pileup_107119$Minus_reads
+
+#S107121 -- Tuss_T24_R3
+pileup_107121<-read.table("Pileup.Data/DNA.Pileup/Sample_107121_DNA.pileup", header = TRUE)
+pileup_107121$S107121 <- pileup_107121$Plus_reads + pileup_107121$Minus_reads
+```
+
+#### 3.1.2. Full DNA Dataset
+
+In the previous step, each `DNA.pileup` file was imported and an additional column was added that summed the **"Plus_reads"** and the **Minus_reads**. The sum column in each `DNA.pileup` file was named after the `DNA.pileup` sample name (e.g. **"S108379"**). All `DNA.pileup` files contain identical genecalls in an identical order allowing us to extract the genecall ID and genecall Length columns from a single sample (**S107104**), along with the summed count column of each sample, to create a new dataframe that represents the initial, **FULL** dataset for downstream analyses:
+
+```{r}
+cts_dna_all <- data.frame(pileup_107104$ID, pileup_107104$Length, pileup_107104$S107104, pileup_107105$S107105, pileup_107106$S107106, pileup_107110$S107110, pileup_107111$S107111, pileup_107112$S107112, pileup_107113$S107113, pileup_107114$S107114, pileup_107115$S107115, pileup_107107$S107107, pileup_107108$S107108, pileup_107116$S107116, pileup_107117$S107117, pileup_107119$S107119, pileup_107121$S107121)
+
+names(cts_dna_all) <- c("ID", "Length", "S107104", "S107105", "S107106", "S107110", "S107111", "S107112", "S107113", "S107114", "S107115", "S107107", "S107108", "S107116", "S107117", "S107119", "S107121")
+```
+
+### 3.2. Import Gene Annotations
+The KEGG Functions file (GhostKoala) and KEGG Taxonomy file (GhostKoala) were imported and the functional and taxonomic annotations were matched to their corresponding genecall ID.
+
+#### 3.2.1. KEGG Reference
+First, a KEGG reference file was imported with additional KEGG Tier pathways that provide additional, useful, functional categories for downstream analyses.  The Tier II, III, and IV categories were merged to the GhostKoala KEGG functional annotations in subsequent steps.
+
+```{r}
+# Import KO_Orthology.txt reference file
+KO_ref<-read.table(file='Annotations.Data/KO_Orthology.txt', sep='\t', quote="", fill=TRUE, header = FALSE)
+
+# Rename column headers
+names(KO_ref)<-c("Tier_II","Tier_III","Tier_IV","KEGG")
+
+# Separate "KEGG" column into "KO" and "Annotation" columns
+KO_ref<-KO_ref %>% separate(KEGG, c("KO_Accession","Annotation"), " ", extra="merge")
+
+# Further separatae "Annotation" column into "Symbol" and "Function" columns
+KO_ref<-KO_ref %>% separate(Annotation, c("KO_Symbol","KO_Function"), "; ", extra="merge")
+```
+
+#### 3.2.2. KEGG Functions
+
+There are 3,917,616 total unique DNA-based genecalls in the metagenomic dataset.  The GhostKOALA KEGG functional annotations file  ("**DNA_data_bbnorm_anvio_contigs_annotations.tsv**") contains annotations for 1,389,518 unique DNA-based genecalls.  This indicates that **35.5%** of the total unique DNA-based genecalls can be functionally annotated.  That also means that **64.5%** of unique DNA-based genecalls cannot be annotated and will not be included in downstream analyses. Here, the unique genecall functional annotations will be matched to the same unique genecalls in the DNA-based metagenomic dataset.
+
+```{r warning=FALSE, message=FALSE}
+# Import the KEGG Functional Annotations file that was exported from the Anvi'o DNA contigs database
+KeggAnvio<-read.table(file='Annotations.Data/DNA_data_bbnorm_anvio_contigs_annotations.tsv', sep='\t', quote = "", fill = TRUE, header = TRUE)
+
+# Rename column headers
+names(KeggAnvio)<-c("ID","Source","Accession","Function","e-value")
+
+# Separate "Function" column into "Symbol" and "Function" columns
+KeggAnvio<-KeggAnvio %>% separate(Function, c("Symbol","Function"), "; ", extra="merge")
+
+# Add "genecall_" to the beginning of each gene ID value to match with downstream analyses
+KeggAnvio$ID <- paste("genecall", KeggAnvio$ID, sep="_")
+
+# Add "KO_Symbol" category to the dataset, matched by KO's between the KO_ref file and KeggAnvio
+KeggAnvio$KO_Symbol = KO_ref[match(KeggAnvio$Accession, KO_ref$KO_Accession), "KO_Symbol"]
+
+# Add "KO_Function" category to the dataset, matched by KO's between the KO_ref file and KeggAnvio
+KeggAnvio$KO_Function = KO_ref[match(KeggAnvio$Accession, KO_ref$KO_Accession), "KO_Function"]
+
+# Add "Tier_II" category to the dataset, matched by KO's between the KO_ref file and KeggAnvio
+KeggAnvio$Tier_II = KO_ref[match(KeggAnvio$Accession, KO_ref$KO_Accession), "Tier_II"]
+
+# Add "Tier_III" category to the dataset, matched by KO's between the KO_ref file and KeggAnvio
+KeggAnvio$Tier_III = KO_ref[match(KeggAnvio$Accession, KO_ref$KO_Accession), "Tier_III"]
+
+# Add "Tier_IV" category to the dataset, matched by KO's between the KO_ref file and KeggAnvio
+KeggAnvio$Tier_IV = KO_ref[match(KeggAnvio$Accession, KO_ref$KO_Accession), "Tier_IV"]
+
+# Keep the Function category from the KO Reference file to potentially fill in gaps in KeggAnvio annotations (many KO's labeled as "None", but the KO should match a known function from the reference file).
+KeggFunction<-data.frame(KeggAnvio$ID,KeggAnvio$Accession,KeggAnvio$Symbol,KeggAnvio$KO_Function,KeggAnvio$Tier_II,KeggAnvio$Tier_III,KeggAnvio$Tier_IV)
+names(KeggFunction)<-c("ID","KO","Symbol","Function","Tier_II","Tier_III","Tier_IV")
+  
+# Merge the KO, Symbol, Function, and all Tier columns into single "Combined" column for some downstream analyses
+KeggFunction$Combined<-paste(KeggFunction$KO, ":", KeggFunction$Symbol, ":", KeggFunction$Function, ":", KeggFunction$Tier_II, ":", KeggFunction$Tier_III, ":", KeggFunction$Tier_IV)
+
+# Keep just "ID" and "Combined" columns for use with some downstream analyses
+KeggData<-data.frame(KeggFunction$ID, KeggFunction$Combined)
+names(KeggData)<-c("ID","KEGG")
+```
+
+#### 3.2.3. KEGG Taxonomy
+
+There are 3,917,616 total unique DNA-based genecalls in the metagenomic dataset. The GhostKoala KEGG taxonomy file ("**KeggTaxonomy.txt**") contains annotations for 3,912,253 unique DNA-based genecalls.  This indicates that **99.9%** of the total unique DNA-based genecalls can be taxonomically annotated. Here, the unique genecall taxonomic annotations will be matched to the same unique genecalls in the DNA-based metagenomic dataset.
+
+```{r}
+#Import KeggTaxonomy.txt from GhostKoala
+KeggTaxa<-read.table("Annotations.Data/KeggTaxonomy.txt", header = TRUE, fill = TRUE)
+names(KeggTaxa)<-c("ID","Domain","Phylum","Class","Order","Family","Genus","Species")
+
+# Merge the taxonomic classes into a single column
+KeggTaxa$Taxonomy <- paste(KeggTaxa$Domain, ":", KeggTaxa$Phylum, ":", KeggTaxa$Class, ":", KeggTaxa$Order, ":", KeggTaxa$Family, ":", KeggTaxa$Genus, ":", KeggTaxa$Species)
+
+# Now keep just "ID" and "Taxonomy"
+KeggTaxa <- data.frame(KeggTaxa$ID, KeggTaxa$Taxonomy)
+names(KeggTaxa)<-c("ID","Taxonomy")
+
+# Add "genecall_" to the beginning of each gene ID value to match with downstream analyses
+KeggTaxa$ID<-paste("genecall", KeggTaxa$ID, sep="_")
+```
+
+## 4. Gene Filtering
+
+The **FULL** DNA CTS dataset was assembled as a single dataframe (columns: [1] genecall, [2] length, [3-14] metagenome Samples; rows: 3,917,616 unique "genecalls").  Now, retain only those genecalls with a value greater than zero in any single sample.  This indicates that these genes were present under at least ONE treatment in the experiment (i.e., potential expression).
+
+### 4.1. Potential Genes
+
+Subsample the unique genecalls that have greater than zero raw read counts ("Potential Genes") across all samples.
+
+```{r}
+#cts_dna_potential
+cts_dna_potential <- subset(cts_dna_all, S107104 > 0 | S107105 > 0 | S107106 > 0 | S107110 > 0 | S107111 > 0 | S107112 > 0 | S107113 > 0 | S107114 > 0 | S107115 > 0 | S107107 > 0 | S107108 > 0 | S107116 > 0 | S107117 > 0 | S107119 > 0 | S107121 > 0, select=c(ID,Length,S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115,S107107,S107108,S107116,S107117,S107119,S107121))
+```
+
+Add functional and taxonomic annotations to each unique genecall within the "Potential" subdata.
+
+```{r}
+# Potential Genes Functional and Taxonomic Annotations
+cts_dna_potential$KEGG = KeggData[match(cts_dna_potential$ID, KeggData$ID), "KEGG"]
+cts_dna_potential$Taxonomy = KeggTaxa[match(cts_dna_potential$ID, KeggTaxa$ID), "Taxonomy"]
+
+# Potential Annotated Genes
+cts_dna_pot_ann<-na.omit(cts_dna_potential, cols="KEGG")
+```
+
+### 4.2. Potential Annotated Genes
+
+***From this point***, we  retain only those genecalls that were potentially expressed ***and*** have a KEGG functional annotation. Start by separating the KEGG categories into unique columns. Remove any genecall whose symbol annotation is "None". Further remove any genecall annotated as Tier II "Organismal Systems" or "Human Diseases".
+
+```{r}
+# Separate "KEGG" column into "KO", "Symbol", "Function", "Tier_II", "Tier_III", and "Tier_IV" columns
+cts_dna_pot_ann<-cts_dna_pot_ann %>% separate(KEGG, c("KO","Symbol","Function","Tier_II","Tier_III","Tier_IV"), ": ", extra="merge")
+
+# Remove KO's with "None" as the "Symbol" annotation
+cts_dna_pot_ann<-cts_dna_pot_ann[!grepl("None", cts_dna_pot_ann$Symbol),]
+
+# Remove KO's with Tier II category "Organismal Systems"
+cts_dna_pot_ann<-cts_dna_pot_ann[!grepl("Organismal Systems ", cts_dna_pot_ann$Tier_II),]
+
+# Remove KO's with Tier II category "Human Diseases"
+cts_dna_pot_ann<-cts_dna_pot_ann[!grepl("Human Diseases ", cts_dna_pot_ann$Tier_II),]
+```
+
+Separate the Taxonomy categories into unique columns. Remove any genecall whose taxonomy is outside of "Archaea", "Bacteria", or "Fungi".
+
+```{r}
+# Separate "Taxonomy" column into "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", and "Species" columns
+cts_dna_pot_ann<-cts_dna_pot_ann %>% separate(Taxonomy, c("Kingdom","Phylum","Class","Order","Family","Genus","Species"), ": ", extra="merge")
+
+# Remove KO's with "ag" as the "Kingdom" annotation
+cts_dna_pot_ann<-cts_dna_pot_ann[!grepl("ag", cts_dna_pot_ann$Kingdom),]
+
+# Remove KO's with "Animals" as the "Kingdom" annotation
+cts_dna_pot_ann<-cts_dna_pot_ann[!grepl("Animals", cts_dna_pot_ann$Kingdom),]
+
+# Remove KO's with "Plants" as the "Kingdom" annotation
+cts_dna_pot_ann<-cts_dna_pot_ann[!grepl("Plants", cts_dna_pot_ann$Kingdom),]
+
+# Remove KO's with "Protists" as the "Kingdom" annotation
+cts_dna_pot_ann<-cts_dna_pot_ann[!grepl("Protists", cts_dna_pot_ann$Kingdom),]
+
+#Re-merge the Taxonomy columns for downstream analysis
+cts_dna_pot_ann$Taxonomy <- paste(cts_dna_pot_ann$Kingdom, ":", cts_dna_pot_ann$Phylum, ":", cts_dna_pot_ann$Class, ":", cts_dna_pot_ann$Order, ":", cts_dna_pot_ann$Family, ":", cts_dna_pot_ann$Genus, ":", cts_dna_pot_ann$Species)
+```
+
+## 5. Gene Normalization
+
+**GPM Normalization:** Converts raw DNA gene counts to ***Genes per Million***.  GPM follows the same methds as **TPM** (Transcripts per Million) described by [Wagner et al. 2012](https://link.springer.com/article/10.1007/s12064-012-0162-3) and used to normalize RNA gene counts in the metatranscriptomes section below.
+
+1. **Calculate Tg**: Tg = Read Count x Average Read Length  / Gene Length
+    + ***Read Count***: *number of reads mapped to each unique genecall*
+    + ***Average Read Length***: *Average read length (between 139-141 bp) within each sample from sequences that passed QC*
+    + ***Gene Length***: *Length of each unique genecall*
+2. **Convert Tg into GPM by sample**: GPM = Tg x 1e+06 / sum(Tg)
+    + ***The sum of GPM values in each sample will equal 1,000,000***
+
+### 5.1. Calculate Tg Values
+
+Calculate Tg values by multiplying the read count of each genecall by the average read length within each sample, then divide by the gene length of each genecall.
+
+```{r}
+cts_dna_pot_ann$S107104_Tg<-(cts_dna_pot_ann$S107104 * 139) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107105_Tg<-(cts_dna_pot_ann$S107105 * 140) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107106_Tg<-(cts_dna_pot_ann$S107106 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107110_Tg<-(cts_dna_pot_ann$S107110 * 140) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107111_Tg<-(cts_dna_pot_ann$S107111 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107112_Tg<-(cts_dna_pot_ann$S107112 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107113_Tg<-(cts_dna_pot_ann$S107113 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107114_Tg<-(cts_dna_pot_ann$S107114 * 140) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107115_Tg<-(cts_dna_pot_ann$S107115 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107107_Tg<-(cts_dna_pot_ann$S107107 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107108_Tg<-(cts_dna_pot_ann$S107108 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107116_Tg<-(cts_dna_pot_ann$S107116 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107117_Tg<-(cts_dna_pot_ann$S107117 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107119_Tg<-(cts_dna_pot_ann$S107119 * 141) / cts_dna_pot_ann$Length
+cts_dna_pot_ann$S107121_Tg<-(cts_dna_pot_ann$S107121 * 141) / cts_dna_pot_ann$Length
+```
+
+### 5.2. Calculate GPM Values
+
+Now multiple each Tg value within a sample by 1e+06 and divide by the sum of Tg values for that sample to determine GPM.
+
+```{r}
+cts_dna_pot_ann$S107104_GPM<-(cts_dna_pot_ann$S107104_Tg * 1000000) / sum(cts_dna_pot_ann$S107104_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107105_GPM<-(cts_dna_pot_ann$S107105_Tg * 1000000) / sum(cts_dna_pot_ann$S107105_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107106_GPM<-(cts_dna_pot_ann$S107106_Tg * 1000000) / sum(cts_dna_pot_ann$S107106_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107110_GPM<-(cts_dna_pot_ann$S107110_Tg * 1000000) / sum(cts_dna_pot_ann$S107110_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107111_GPM<-(cts_dna_pot_ann$S107111_Tg * 1000000) / sum(cts_dna_pot_ann$S107111_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107112_GPM<-(cts_dna_pot_ann$S107112_Tg * 1000000) / sum(cts_dna_pot_ann$S107112_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107113_GPM<-(cts_dna_pot_ann$S107113_Tg * 1000000) / sum(cts_dna_pot_ann$S107113_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107114_GPM<-(cts_dna_pot_ann$S107114_Tg * 1000000) / sum(cts_dna_pot_ann$S107114_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107115_GPM<-(cts_dna_pot_ann$S107115_Tg * 1000000) / sum(cts_dna_pot_ann$S107115_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107107_GPM<-(cts_dna_pot_ann$S107107_Tg * 1000000) / sum(cts_dna_pot_ann$S107107_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107108_GPM<-(cts_dna_pot_ann$S107108_Tg * 1000000) / sum(cts_dna_pot_ann$S107108_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107116_GPM<-(cts_dna_pot_ann$S107116_Tg * 1000000) / sum(cts_dna_pot_ann$S107116_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107117_GPM<-(cts_dna_pot_ann$S107117_Tg * 1000000) / sum(cts_dna_pot_ann$S107117_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107119_GPM<-(cts_dna_pot_ann$S107119_Tg * 1000000) / sum(cts_dna_pot_ann$S107119_Tg,na.rm=TRUE)
+cts_dna_pot_ann$S107121_GPM<-(cts_dna_pot_ann$S107121_Tg * 1000000) / sum(cts_dna_pot_ann$S107121_Tg,na.rm=TRUE)
+```
+
+### 5.3. Create GPM Dataframe
+
+Create the GPM dataframe by subsetting columns of interest from the cts_dna_pot_ann dataframe.
+
+```{r}
+gpm_all<-data.frame(cts_dna_pot_ann$ID,cts_dna_pot_ann$S107104_GPM,cts_dna_pot_ann$S107105_GPM,cts_dna_pot_ann$S107106_GPM,cts_dna_pot_ann$S107110_GPM,cts_dna_pot_ann$S107111_GPM,cts_dna_pot_ann$S107112_GPM,cts_dna_pot_ann$S107113_GPM,cts_dna_pot_ann$S107114_GPM,cts_dna_pot_ann$S107115_GPM,cts_dna_pot_ann$S107107_GPM,cts_dna_pot_ann$S107108_GPM,cts_dna_pot_ann$S107116_GPM,cts_dna_pot_ann$S107117_GPM,cts_dna_pot_ann$S107119_GPM,cts_dna_pot_ann$S107121_GPM,cts_dna_pot_ann$KO,cts_dna_pot_ann$Symbol,cts_dna_pot_ann$Function,cts_dna_pot_ann$Tier_II,cts_dna_pot_ann$Tier_III,cts_dna_pot_ann$Tier_IV,cts_dna_pot_ann$Taxonomy)
+
+names(gpm_all)<-c("ID","S107104_GPM","S107105_GPM","S107106_GPM","S107110_GPM","S107111_GPM","S107112_GPM","S107113_GPM","S107114_GPM","S107115_GPM","S107107_GPM","S107108_GPM","S107116_GPM","S107117_GPM","S107119_GPM","S107121_GPM","KO","Symbol","Function","Tier_II","Tier_III","Tier_IV","Taxonomy")
+```
+
+```{r echo=FALSE, eval=FALSE}
+write.csv(gpm_all, 'Norm.Results/gpm.all.data.csv')
+```
+
+## 6. Gene Datasets
+
+Now, we further separate the normalized potential annotated DNA subdata into their experimental treatments in order to analyze statistical differences in potential gene expression patterns between experimental treatments. Pairwise similarities among metagenomces will be calculated using Bray-Curtis similarity values, with differences between treatments assessed via PERMANOVA.
+
+### 6.1. Tussock Gene Data
+
+Separate the **Tussock** samples into their own dataset.  ***Keep only those unique genecalls that have potential expression in at least 1 Tuss sample.***
+
+```{r}
+# Subset the TUSS GPM Normalized Potential Annotated subdata
+gpm_tuss <- subset(gpm_all, select=c(ID,S107107_GPM,S107108_GPM,S107116_GPM,S107117_GPM,S107119_GPM,S107121_GPM,KO,Symbol,Function,Tier_II,Tier_III,Tier_IV, Taxonomy))
+
+names(gpm_tuss)<-c("ID","Tuss1_T0","Tuss2_T0","Tuss1_T4","Tuss2_T4","Tuss1_T24","Tuss3_T24","KO","Symbol","Function","Tier_II","Tier_III","Tier_IV","Taxonomy")
+
+# Remove any non-expressed genes from the Tussock samples
+gpm_tuss_potential <- subset(gpm_tuss, Tuss1_T0 > 0 | Tuss2_T0 > 0 | Tuss1_T4 > 0 | Tuss2_T4 > 0 | Tuss1_T24 > 0 | Tuss3_T24 > 0, select=c(ID,Tuss1_T0,Tuss2_T0,Tuss1_T4,Tuss2_T4,Tuss1_T24,Tuss3_T24,KO,Symbol,Function,Tier_II,Tier_III,Tier_IV,Taxonomy))
+```
+
+### 6.2. Wet Sedge Gene Data
+
+Separate the **Wet Sedge** samples into their own dataset.  ***Keep only those unique genecalls that have potential expression in at least 1 WS sample.***
+
+```{r}
+# Subset the WS GPM Normalized Potential Annotated subdata
+gpm_ws <- subset(gpm_all, select=c(ID,S107104_GPM,S107105_GPM,S107106_GPM,S107110_GPM,S107111_GPM,S107112_GPM,S107113_GPM,S107114_GPM,S107115_GPM,KO,Symbol,Function,Tier_II,Tier_III,Tier_IV,Taxonomy))
+names(gpm_ws)<-c("ID","WS1_T0","WS2_T0","WS3_T0","WS1_T4","WS2_T4","WS3_T4","WS1_T24","WS2_T24","WS3_T24","KO","Symbol","Function","Tier_II","Tier_III","Tier_IV","Taxonomy")
+
+# Remove any non-expressed genes from the Wet Sedge samples
+gpm_ws_potential <- subset(gpm_ws, WS1_T0 > 0 | WS2_T0 > 0 | WS3_T0 > 0 | WS1_T4 > 0 | WS2_T4 > 0 | WS3_T4 > 0 | WS1_T24 > 0 | WS2_T24 > 0 | WS3_T24 > 0, select=c(ID,WS1_T0,WS2_T0,WS3_T0,WS1_T4,WS2_T4,WS3_T4,WS1_T24,WS2_T24,WS3_T24,KO,Symbol,Function,Tier_II,Tier_III,Tier_IV,Taxonomy))
+```
+
+### 6.3. All Gene Data
+
+We also need the full TUSS and WS Potential Annotated data together to make comparisons between ecosystems within each sampling timepoint.  Reformat the `gpm_all` table and separate the "KEGG" column into all of its functional categories for downstream use.
+
+```{r}
+# Make a new object for the rpm_all table so that you don't overwrite the original
+gpm_all_pot_ann<-gpm_all
+
+names(gpm_all_pot_ann)<-c("ID","S107104","S107105","S107106","S107110","S107111","S107112","S107113","S107114","S107115","S107107","S107108","S107116","S107117","S107119","S107121","KO","Symbol","Function","Tier_II","Tier_III","Tier_IV","Taxonomy")
+```
+
+## 7. Gene Analysis
+
+### 7.1. Taxonomy
+Here, we determine the taxonomic composition of the microbial community by analyzing the relative abundance of potential genes for KEGG tier IV "Ribosomes" (03010 Ribosome PATH: ko03010).  Within the "Ribosome" category, there are annotations for "small subunit ribosomal protein" (ssu) and "large subunit ribosomal protein" (lsu). For Bacteria and Archaea, we use the ssu annotations (similar to 16S ssu rRNA targeted analysis). For Fungi, we use both the ssu (18S ssu rRNA) and lsu (28S lsu rRNA) annotations.
+
+#### 7.1.1. Bacteria/Archaea SSU
+The first analysis pulls out all gene expression for "Ribosomes" and removes lsu annotations such that only ssu annotations are used for determining relative expression of Bacteria and Archaea at each sampling time point in both tussock and wet sedge tundra.
+
+```{r}
+# Subset all unique genecalls whose annotation matches "Ribosomes"
+taxa_ribo_dna_all<- gpm_all_pot_ann[ which(gpm_all_pot_ann$Tier_IV=='03010 Ribosome [PATH:ko03010]'),]
+```
+
+```{r warning=FALSE}
+# Make copy of Ribosome dataset to manipulate
+taxa_ribo_dna_ssu<-taxa_ribo_dna_all
+
+# Remove "large subunit ribosomal protein" from dataset
+taxa_ribo_dna_ssu<-taxa_ribo_dna_ssu[!grepl("large subunit ribosomal protein", taxa_ribo_dna_ssu$Function),]
+
+# Write data to file for Alpha Diversity statistics
+write.csv(taxa_ribo_dna_ssu, 'Ribo.Results/ALPHA.taxa.dna.ssu.csv')
+
+# Remove "Fungi" from dataset
+taxa_ribo_dna_ssu<-taxa_ribo_dna_ssu[!grepl("Fungi", taxa_ribo_dna_ssu$Taxonomy),]
+
+# Separate "Taxonomy" column into all subdivisions
+taxa_ribo_dna_ssu<-taxa_ribo_dna_ssu %>% separate(Taxonomy, c("Kingdom","Phylum","Class","Order","Family","Genus","Species"), ": ", extra="merge")
+
+# Keep "Kingdom" and "Phylum"
+taxa_ribo_dna_ssu <- data.frame(taxa_ribo_dna_ssu$Kingdom,taxa_ribo_dna_ssu$Phylum, taxa_ribo_dna_ssu$S107104,taxa_ribo_dna_ssu$S107105,taxa_ribo_dna_ssu$S107106,taxa_ribo_dna_ssu$S107110,taxa_ribo_dna_ssu$S107111,taxa_ribo_dna_ssu$S107112,taxa_ribo_dna_ssu$S107113,taxa_ribo_dna_ssu$S107114,taxa_ribo_dna_ssu$S107115,taxa_ribo_dna_ssu$S107107,taxa_ribo_dna_ssu$S107108,taxa_ribo_dna_ssu$S107116,taxa_ribo_dna_ssu$S107117,taxa_ribo_dna_ssu$S107119,taxa_ribo_dna_ssu$S107121)
+names(taxa_ribo_dna_ssu)<-c("Kingdom","Phylum","ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24")
+
+# Remove "Unclassified" taxa otherwise it will clump unclassified Archaea with unclassified Bacteria (not what we want)
+taxa_ribo_dna_ssu<-taxa_ribo_dna_ssu[!grepl("Unclassified", taxa_ribo_dna_ssu$Phylum),]
+
+# Remove "Other" taxa otherwise it will clump "other" Archaea with "other" Bacteria (not what we want)
+taxa_ribo_dna_ssu<-taxa_ribo_dna_ssu[!grepl("Other", taxa_ribo_dna_ssu$Phylum),]
+
+# Sort data by Kingdom alphabetically
+taxa_ribo_dna_ssu<-taxa_ribo_dna_ssu[order(taxa_ribo_dna_ssu$Kingdom,taxa_ribo_dna_ssu$Phylum),]
+
+# Sum each column by unique Phylum
+taxa_ribo_dna_ssu_sum<-taxa_ribo_dna_ssu %>% group_by(Phylum) %>% summarise_at(vars("ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24"), sum)
+taxa_ribo_dna_ssu_sum<-taxa_ribo_dna_ssu_sum %>% mutate_at(vars('ws1-T0','ws2-T0','ws3-T0','ws1-T4','ws2-T4','ws3-T4','ws1-T24','ws2-T24','ws3-T24','tuss1-T0','tuss2-T0','tuss1-T4','tuss2-T4','tuss1-T24','tuss3-T24'), funs(round(., 0)))
+taxa_ribo_dna_ssu_sum<-as.data.frame(taxa_ribo_dna_ssu_sum)
+
+taxa_ribo_dna_ssu_sum
+```
+
+```{r echo=FALSE}
+# Save taxa_ribo_dna_ssu_sum as .csv file
+write.csv(taxa_ribo_dna_ssu_sum, 'Ribo.Results/taxa.ribo.dna.ssu.sum.csv')
+```
+
+Repeat the same "Ribosome" analysis as above (at Phylum level), but this time keep all the taxonomy information.
+```{r}
+# Make copy of taxa_ribo_all to manipulate
+taxa_ribo_dna_ssu2<-taxa_ribo_dna_all
+
+# Keep "Taxonomy" column
+taxa_ribo_dna_ssu2 <- data.frame(taxa_ribo_dna_ssu2$Function,taxa_ribo_dna_ssu2$Taxonomy,taxa_ribo_dna_ssu2$S107104,taxa_ribo_dna_ssu2$S107105,taxa_ribo_dna_ssu2$S107106,taxa_ribo_dna_ssu2$S107110,taxa_ribo_dna_ssu2$S107111,taxa_ribo_dna_ssu2$S107112,taxa_ribo_dna_ssu2$S107113,taxa_ribo_dna_ssu2$S107114,taxa_ribo_dna_ssu2$S107115,taxa_ribo_dna_ssu2$S107107,taxa_ribo_dna_ssu2$S107108,taxa_ribo_dna_ssu2$S107116,taxa_ribo_dna_ssu2$S107117,taxa_ribo_dna_ssu2$S107119,taxa_ribo_dna_ssu2$S107121)
+names(taxa_ribo_dna_ssu2)<-c("Function","Taxonomy","ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24")
+
+# Remove "large subunit ribosomal protein" from dataset
+taxa_ribo_dna_ssu2<-taxa_ribo_dna_ssu2[!grepl("large subunit ribosomal protein", taxa_ribo_dna_ssu2$Function),]
+
+# Remove "Fungi" from dataset
+taxa_ribo_dna_ssu2<-taxa_ribo_dna_ssu2[!grepl("Fungi", taxa_ribo_dna_ssu2$Taxonomy),]
+```
+
+```{r}
+# Sort data by Kingdom alphabetically
+taxa_ribo_dna_ssu2<-taxa_ribo_dna_ssu2[order(taxa_ribo_dna_ssu2$Function,taxa_ribo_dna_ssu2$Taxonomy),]
+
+# Sum each column by unique Taxonomy
+taxa_ribo_dna_ssu2_sum<-taxa_ribo_dna_ssu2 %>% group_by(Taxonomy) %>% summarise_at(vars("ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24"), sum)
+taxa_ribo_dna_ssu2_sum<-taxa_ribo_dna_ssu2_sum %>% mutate_at(vars('ws1-T0','ws2-T0','ws3-T0','ws1-T4','ws2-T4','ws3-T4','ws1-T24','ws2-T24','ws3-T24','tuss1-T0','tuss2-T0','tuss1-T4','tuss2-T4','tuss1-T24','tuss3-T24'), funs(round(., 0)))
+taxa_ribo_dna_ssu2_sum<-as.data.frame(taxa_ribo_dna_ssu2_sum)
+
+taxa_ribo_dna_ssu2_sum
+```
+
+```{r echo=FALSE}
+# Save taxa_ribo_dna_all_sum as .csv file
+write.csv(taxa_ribo_dna_ssu2_sum, 'Ribo.Results/taxa_ribo_dna_ssu2_sum.csv')
+```
+
+#### 7.1.2. Fungi SSU/LSU
+The second analysis pulls out all gene expression for "Ribosomes" and removes Bacteria and Archaea annotations while retaining just Fungi with both ssu and lsu annotations to determine relative expression of Fungi at each sampling time point in both tussock and wet sedge tundra.
+
+```{r}
+# Make copy of Ribosome dataset to manipulate
+taxa_ribo_dna_fungi<-taxa_ribo_dna_all
+
+# Remove "Bacteria" from dataset
+taxa_ribo_dna_fungi<-taxa_ribo_dna_fungi[!grepl("Bacteria", taxa_ribo_dna_fungi$Taxonomy),]
+
+# Remove "Archaea" from dataset
+taxa_ribo_dna_fungi<-taxa_ribo_dna_fungi[!grepl("Archaea", taxa_ribo_dna_fungi$Taxonomy),]
+
+# Separate "Taxonomy" column into all subdivisions
+taxa_ribo_dna_fungi<-taxa_ribo_dna_fungi %>% separate(Taxonomy, c("Kingdom","Phylum","Class","Order","Family","Genus","Species"), ": ", extra="merge")
+
+# Keep "Kingdom" and "Phylum"
+taxa_ribo_dna_fungi <- data.frame(taxa_ribo_dna_fungi$Kingdom,taxa_ribo_dna_fungi$Phylum, taxa_ribo_dna_fungi$S107104,taxa_ribo_dna_fungi$S107105,taxa_ribo_dna_fungi$S107106,taxa_ribo_dna_fungi$S107110,taxa_ribo_dna_fungi$S107111,taxa_ribo_dna_fungi$S107112,taxa_ribo_dna_fungi$S107113,taxa_ribo_dna_fungi$S107114,taxa_ribo_dna_fungi$S107115,taxa_ribo_dna_fungi$S107107,taxa_ribo_dna_fungi$S107108,taxa_ribo_dna_fungi$S107116,taxa_ribo_dna_fungi$S107117,taxa_ribo_dna_fungi$S107119,taxa_ribo_dna_fungi$S107121)
+names(taxa_ribo_dna_fungi)<-c("Kingdom","Phylum","ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24")
+
+# Remove "Unclassified" taxa
+taxa_ribo_dna_fungi<-taxa_ribo_dna_fungi[!grepl("Unclassified", taxa_ribo_dna_fungi$Phylum),]
+
+# Remove "Other" taxa
+taxa_ribo_dna_fungi<-taxa_ribo_dna_fungi[!grepl("Other", taxa_ribo_dna_fungi$Phylum),]
+
+# Sort data by Kingdom alphabetically
+taxa_ribo_dna_fungi<-taxa_ribo_dna_fungi[order(taxa_ribo_dna_fungi$Kingdom,taxa_ribo_dna_fungi$Phylum),]
+
+# Sum each column by unique Phylum
+taxa_ribo_dna_fungi_sum<-taxa_ribo_dna_fungi %>% group_by(Phylum) %>% summarise_at(vars("ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24"), sum)
+taxa_ribo_dna_fungi_sum<-taxa_ribo_dna_fungi_sum %>% mutate_at(vars('ws1-T0','ws2-T0','ws3-T0','ws1-T4','ws2-T4','ws3-T4','ws1-T24','ws2-T24','ws3-T24','tuss1-T0','tuss2-T0','tuss1-T4','tuss2-T4','tuss1-T24','tuss3-T24'), funs(round(., 0)))
+taxa_ribo_dna_fungi_sum<-as.data.frame(taxa_ribo_dna_fungi_sum)
+
+taxa_ribo_dna_fungi_sum
+```
+
+```{r echo=FALSE}
+# Save taxa_ribo_dna_fungi_sum as .csv file
+write.csv(taxa_ribo_dna_fungi_sum, 'Ribo.Results/taxa.ribo.dna.fungi.sum.csv')
+```
+
+Repeat the same "Ribosome" analysis as above (at Phylum level), but this time keep all the taxonomy information.
+```{r}
+# Make copy of taxa_ribo_all to manipulate
+taxa_ribo_dna_fungi2<-taxa_ribo_dna_all
+
+# Keep "Taxonomy" column
+taxa_ribo_dna_fungi2 <- data.frame(taxa_ribo_dna_fungi2$Function,taxa_ribo_dna_fungi2$Taxonomy,taxa_ribo_dna_fungi2$S107104,taxa_ribo_dna_fungi2$S107105,taxa_ribo_dna_fungi2$S107106,taxa_ribo_dna_fungi2$S107110,taxa_ribo_dna_fungi2$S107111,taxa_ribo_dna_fungi2$S107112,taxa_ribo_dna_fungi2$S107113,taxa_ribo_dna_fungi2$S107114,taxa_ribo_dna_fungi2$S107115,taxa_ribo_dna_fungi2$S107107,taxa_ribo_dna_fungi2$S107108,taxa_ribo_dna_fungi2$S107116,taxa_ribo_dna_fungi2$S107117,taxa_ribo_dna_fungi2$S107119,taxa_ribo_dna_fungi2$S107121)
+names(taxa_ribo_dna_fungi2)<-c("Function","Taxonomy","ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24")
+
+# Remove "Bacteria" from dataset
+taxa_ribo_dna_fungi2<-taxa_ribo_dna_fungi2[!grepl("Bacteria", taxa_ribo_dna_fungi2$Taxonomy),]
+
+# Remove "Archaea" from dataset
+taxa_ribo_dna_fungi2<-taxa_ribo_dna_fungi2[!grepl("Archaea", taxa_ribo_dna_fungi2$Taxonomy),]
+```
+
+```{r}
+# Sort data by Kingdom alphabetically
+taxa_ribo_dna_fungi2<-taxa_ribo_dna_fungi2[order(taxa_ribo_dna_fungi2$Function,taxa_ribo_dna_fungi2$Taxonomy),]
+
+# Sum each column by unique Taxonomy
+taxa_ribo_dna_fungi2_sum<-taxa_ribo_dna_fungi2 %>% group_by(Taxonomy) %>% summarise_at(vars("ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss3-T24"), sum)
+taxa_ribo_dna_fungi2_sum<-taxa_ribo_dna_fungi2_sum %>% mutate_at(vars('ws1-T0','ws2-T0','ws3-T0','ws1-T4','ws2-T4','ws3-T4','ws1-T24','ws2-T24','ws3-T24','tuss1-T0','tuss2-T0','tuss1-T4','tuss2-T4','tuss1-T24','tuss3-T24'), funs(round(., 0)))
+taxa_ribo_dna_fungi2_sum<-as.data.frame(taxa_ribo_dna_fungi2_sum)
+
+taxa_ribo_dna_fungi2_sum
+```
+
+```{r echo=FALSE}
+# Save taxa_ribo_dna_fungi2_sum as .csv file
+write.csv(taxa_ribo_dna_fungi2_sum, 'Ribo.Results/taxa.ribo.dna.fungi2.sum.csv')
+```
+
+#### 7.1.3. Plotting Taxonomy
+
+Plot the relative abundance of taxa by all replicates within tussock and wet sedge tundra as a stackplot.
+```{r echo=FALSE}
+taxa.MG.all.chart<-read.csv("Plot.Data/taxa.MG.all.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.MG.all.chart$Species<-factor(taxa.MG.all.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.MG.all.chart$Species<-fct_rev(taxa.MG.all.chart$Species)
+
+taxa.MG.all.chart$Sample<-factor(taxa.MG.all.chart$Sample,levels = c("Tuss1-MG-T0","Tuss2-MG-T0","Tuss1-MG-T4","Tuss2-MG-T4","Tuss1-MG-T24","Tuss3-MG-T24","WS1-MG-T0","WS2-MG-T0","WS3-MG-T0","WS1-MG-T4","WS2-MG-T4","WS3-MG-T4","WS1-MG-T24","WS2-MG-T24","WS3-MG-T24"))
+```
+
+```{r}
+colourCount = length(unique(taxa.MG.all.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.MG.all.plot<-ggplot(taxa.MG.all.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Relative Taxon", paste("Expression (%)")))) + theme_minimal() + theme(axis.text=element_text(size=10),axis.title=element_text(size=12),axis.title.x=element_blank()) + theme(legend.position = "right", legend.title=element_blank(), legend.text=element_text(size=8), legend.key.size = unit(0.75,"line"), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), panel.border = element_blank()) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 8)) + scale_size(guide=FALSE) + scale_fill_manual(values = rev(getPalette(colourCount))) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 15)) + theme(axis.text.x = element_text(angle = 270, hjust=0)) 
+```
+
+```{r}
+taxa.MG.all.plot
+```
+
+```{r, echo=FALSE, eval=FALSE}
+# Save the Ribosome Taxonomy plot as an individual figure
+setEPS()
+postscript("Fig.S2.Ribo.Stackplot.eps", width=7, height = 5.0)
+ggarrange(taxa.ribo.plot, heights=c(3,3),
+          ncol = 1, nrow = 1)
+dev.off()
+```
+
+#### 4.2.2 Mean Time Point
+
+Plot the mean relative abundance of taxa by sampling time point within tussock and wet sedge tundra as a stackplot.
+```{r echo=FALSE}
+taxa.MG.time.mean.chart<-read.csv("Plot.Data/taxa.MG.time.mean.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.MG.time.mean.chart$Species<-factor(taxa.MG.time.mean.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.MG.time.mean.chart$Species<-fct_rev(taxa.MG.time.mean.chart$Species)
+
+taxa.MG.time.mean.chart$Sample<-factor(taxa.MG.time.mean.chart$Sample,levels = c("Tuss-MG-T0","Tuss-MG-T4","Tuss-MG-T24","WS-MG-T0","WS-MG-T4","WS-MG-T24"))
+```
+
+```{r}
+colourCount = length(unique(taxa.MG.time.mean.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.MG.time.mean.plot<-ggplot(taxa.MG.time.mean.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Relative Taxon", paste("Expression (%)")))) + theme_minimal() + theme(axis.text=element_text(size=10),axis.title=element_text(size=12),axis.title.x=element_blank()) + theme(legend.position = "right", legend.title=element_blank(), legend.text=element_text(size=8), legend.key.size = unit(0.75,"line"), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), panel.border = element_blank()) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 8)) + scale_size(guide=FALSE) + scale_fill_manual(values = rev(getPalette(colourCount))) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 15)) + theme(axis.text.x = element_text(angle = 270, hjust=0)) 
+```
+
+```{r}
+taxa.MG.time.mean.plot
+```
+
+#### 4.2.3 Mean Tundra
+
+Plot the mean relative abundance of taxa by within tussock and wet sedge tundra as a stackplot.
+```{r echo=FALSE}
+taxa.MG.tundra.mean.chart<-read.csv("Plot.Data/taxa.MG.tundra.mean.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.MG.tundra.mean.chart$Species<-factor(taxa.MG.tundra.mean.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.MG.tundra.mean.chart$Species<-fct_rev(taxa.MG.tundra.mean.chart$Species)
+
+taxa.MG.tundra.mean.chart$Sample<-factor(taxa.MG.tundra.mean.chart$Sample,levels = c("Tuss-MG","WS-MG"))
+```
+
+```{r}
+colourCount = length(unique(taxa.MG.tundra.mean.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.MG.tundra.mean.plot<-ggplot(taxa.MG.tundra.mean.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Relative Taxon", paste("Expression (%)")))) + theme_minimal() + theme(axis.text=element_text(size=10),axis.title=element_text(size=12),axis.title.x=element_blank()) + theme(legend.position = "right", legend.title=element_blank(), legend.text=element_text(size=8), legend.key.size = unit(0.75,"line"), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), panel.border = element_blank()) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 8)) + scale_size(guide=FALSE) + scale_fill_manual(values = rev(getPalette(colourCount))) + scale_x_discrete(labels = function(Sample) str_wrap(Sample, width = 15)) + theme(axis.text.x = element_text(angle = 270, hjust=0)) 
+```
+
+```{r}
+taxa.MG.tundra.mean.plot
+```
+
+Plot the relative expression of ribosomes as a stackplot with the MEAN of samples by time point
+```{r echo=FALSE}
+taxa.tuss.dna.mean.ribo.chart<-read.csv("Plot.Data/taxa.tuss.dna.mean.ribo.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.tuss.dna.mean.ribo.chart$Species<-factor(taxa.tuss.dna.mean.ribo.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.tuss.dna.mean.ribo.chart$Species<-fct_rev(taxa.tuss.dna.mean.ribo.chart$Species)
+
+taxa.tuss.dna.mean.ribo.chart$Sample<-factor(taxa.tuss.dna.mean.ribo.chart$Sample,levels = c("Tuss-MG-T0","Tuss-MG-T4","Tuss-MG-T24"))
+```
+
+```{r}
+colourCount = length(unique(taxa.tuss.dna.mean.ribo.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.tuss.dna.mean.ribo.plot<-ggplot(taxa.tuss.dna.mean.ribo.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Community Composition", paste("Relative Abundance (%)")))) + scale_fill_manual(values = rev(getPalette(colourCount)), guide=guide_legend(reverse=FALSE)) + theme_classic() + theme(axis.title.x=element_blank(), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.ticks = element_blank(), axis.text.x = element_text(angle = 270, hjust=0), axis.text=element_text(size=10), axis.title=element_text(size=12), legend.position = "none", legend.title=element_blank(), legend.text=element_text(size=8)) + scale_y_continuous(expand = c(0, 0), limits = c(0, 101))
+```
+
+```{r}
+taxa.tuss.dna.mean.ribo.plot
+```
+
+Plot the relative expression of ribosomes as a stackplot with the MEAN of samples by time point
+```{r echo=FALSE}
+taxa.ws.dna.mean.ribo.chart<-read.csv("Plot.Data/taxa.ws.dna.mean.ribo.stackplot.csv")
+```
+
+```{r}
+# Place taxa in order for plotting
+taxa.ws.dna.mean.ribo.chart$Species<-factor(taxa.ws.dna.mean.ribo.chart$Species,levels = c("Acidobacteria","Actinobacteria","Alphaproteobacteria","Betaproteobacteria","Deltaproteobacteria","Gammaproteobacteria","Proteobacteria Unclassified","Bacteroidetes","Chloroflexi","Firmicutes","Planctomycetes","Verrucomicrobia","Bacteria Unclassified","Bacteria Other","Archaea","Fungi"))
+
+taxa.ws.dna.mean.ribo.chart$Species<-fct_rev(taxa.ws.dna.mean.ribo.chart$Species)
+
+taxa.ws.dna.mean.ribo.chart$Sample<-factor(taxa.ws.dna.mean.ribo.chart$Sample,levels = c("WS-MG-T0","WS-MG-T4","WS-MG-T24"))
+```
+
+```{r}
+colourCount = length(unique(taxa.ws.dna.mean.ribo.chart$Species))
+getPalette = colorRampPalette(brewer.pal(12, "Paired"))
+
+taxa.ws.dna.mean.ribo.plot<-ggplot(taxa.ws.dna.mean.ribo.chart, aes(fill=Species, y=Value, x=Sample)) + geom_bar(position = "stack", stat="identity", color="black") + ylab(expression(atop("Community Composition", paste("Relative Abundance (%)")))) + scale_fill_manual(values = rev(getPalette(colourCount)), guide=guide_legend(reverse=FALSE)) + theme_classic() + theme(axis.title.x=element_blank(), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.ticks = element_blank(), axis.text.x = element_text(angle = 270, hjust=0), axis.text=element_text(size=10), axis.title=element_text(size=12), legend.position = "right", legend.title=element_blank(), legend.text=element_text(size=8), legend.key.size = unit(0.75,"line")) + scale_y_continuous(expand = c(0, 0), limits = c(0, 101))
+```
+
+```{r}
+taxa.ws.dna.mean.ribo.plot
+```
+
+```{r echo=FALSE, eval=FALSE}
+# Save the Ribosome Taxonomy plot as an individual figure
+setEPS()
+postscript("Fig.1.1.Taxa.MG.MT.eps", width=10.0, height = 5.0)
+div.plot<-plot_grid(taxa.tuss.dna.mean.ribo.plot, taxa.ws.dna.mean.ribo.plot, rel_widths = c(2,3), labels=c("A","B"))
+plot_grid(div.plot, ncol = 1)
+dev.off()
+```
+
+```{r echo=FALSE, eval=FALSE}
+# Save the Ribosome Taxonomy plot as an individual figure
+setEPS()
+postscript("Fig.1.1.1.MG.Taxa.eps", width=5.0, height = 5.0)
+ggarrange(taxa.tuss.dna.mean.ribo.plot, ncol = 1, nrow = 1, align="v")
+dev.off()
+```
+
+```{r echo=FALSE, eval=FALSE}
+# Save the Ribosome Taxonomy plot as an individual figure
+setEPS()
+postscript("Fig.1.1.2.MG.Taxa.eps", width=7.0, height = 5.0)
+ggarrange(taxa.ws.dna.mean.ribo.plot, ncol = 1, nrow = 1, align="v")
+dev.off()
+```
+
+#### 7.1.4. Taxonomy Statistics
+
+To determine if there are significant differences in mean relative abundance of dominant taxa between tundra ecosystems, we calculate the mean (SD) of each phylum (dominant phylum; >1%) within tussock tundra and within wet sedge tundra throughout the experiment and compare to each other.
+
+```{r echo=FALSE}
+taxa.dna.table<-read.csv("Table.Data/taxa.dna.table.csv")
+```
+
+```{r}
+# Rename column headings
+colnames(taxa.dna.table)<-c("Taxonomy","Tuss Relative Abundance (%)","WS Relative Abundance (%)","Mean Difference", "Paired t-test (p-value)")
+
+kable(taxa.dna.table, caption = "Relative abundance (mean (SD)) of microbial taxa within tussock tundra and wet sedge tundra with mean difference (%) and significance (p-value).", format.args = list(big.mark = ","), align = "l") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+Test for differences in mean relative abundance of dominant phyla between tundra ecosystems.
+
+```{r echo=FALSE}
+taxa.dna.phylum.t.test<-read.csv("Stats.Data/taxa.dna.phylum.t.test.csv")
+```
+
+```{r}
+# Pairwise comparisons between tundra ecosystems for each microbial taxonomic class
+taxa.dna.phylum.t.test.stats <- taxa.dna.phylum.t.test %>%
+  group_by(Phylum) %>%
+  pairwise_t_test(
+    Abundance ~ Tundra, paired = TRUE, 
+    p.adjust.method = "bonferroni"
+    ) %>%
+  select(-.y., -n1, -n2, -df, -statistic, -p) # Remove details
+taxa.dna.phylum.t.test.stats
+```
+
+**Alpha Diversity:**  We also test for significant differences in the diversity of microbial taxa between tundra ecosystems.
+```{r echo=FALSE}
+alpha.dna.taxa<-read.csv("Stats.Data/ALPHA.taxa.dna.ssu.csv")
+
+rownames(alpha.dna.taxa) <- alpha.dna.taxa$ID
+alpha.dna.taxa[1] <- NULL
+```
+
+```{r}
+# Richness: Sum up the number of non-zero entries per row
+alpha.dna.taxa.rich <- apply(alpha.dna.taxa>0,1,sum)
+write.csv(alpha.dna.taxa.rich, 'Ribo.Results/alpha.dna.taxa.rich.csv')
+alpha.dna.taxa.rich
+
+# Abundance: sum up the number of non-zero entries per row (1)
+alpha.dna.taxa.abund <- apply(alpha.dna.taxa,1,sum)
+write.csv(alpha.dna.taxa.abund, 'Ribo.Results/alpha.dna.taxa.abund.csv')
+alpha.dna.taxa.abund
+
+# Diversity: Shannon-Wiener Index (H')
+alpha.dna.taxa.div <- diversity(alpha.dna.taxa, index="shannon")
+write.csv(alpha.dna.taxa.div, 'Ribo.Results/alpha.dna.taxa.div.csv')
+alpha.dna.taxa.div
+```
+
+```{r echo=FALSE}
+alpha.dna.taxa.t.test<-read.csv("Stats.Data/alpha.dna.taxa.t.test.csv")
+```
+
+Run paired t-test to determine significance for Shannon Diversity.
+```{r}
+t.test(alpha.dna.taxa.t.test$Tuss,alpha.dna.taxa.t.test$WS,paired=TRUE)
+```
+
+Beta Diversity
+
+Calculate the Bray-Curtis dissimilarity matrix to use with `adonis`
+
+```{r echo=FALSE}
+beta.dna.taxa<-read.csv("Stats.Data/ALPHA.taxa.dna.ssu.csv")
+
+rownames(beta.dna.taxa) <- beta.dna.taxa$ID
+beta.dna.taxa[1] <- NULL
+```
+
+```{r}
+# Make dna_taxa_gpm_all_groups object
+beta.dna.taxa_sample<-c("ws1-T0","ws2-T0","ws3-T0","ws1-T4","ws2-T4","ws3-T4","ws1-T24","ws2-T24","ws3-T24","tuss1-T0","tuss2-T0","tuss1-T4","tuss2-T4","tuss1-T24","tuss2-T24")
+beta.dna.taxa_veg<-c("WS","WS","WS","WS","WS","WS","WS","WS","WS","TUSS","TUSS","TUSS","TUSS","TUSS","TUSS")
+beta.dna.taxa_time<-c("T0","T0","T0","T4","T4","T4","T24","T24","T24","T0","T0","T4","T4","T24","T24")
+beta.dna.taxa_groups<-data.frame(beta.dna.taxa_sample,beta.dna.taxa_veg,beta.dna.taxa_time)
+
+# Convert the values in Column 1 ("beta.dna.taxa_sample") into row names
+rownames(beta.dna.taxa_groups)<-beta.dna.taxa_groups[,1]
+beta.dna.taxa_groups<-beta.dna.taxa_groups[,-1]
+```
+
+```{r}
+# Bray-Curtis Dissimilarity Matrix for tpm_all_taxa_beta
+dna.tpm.taxa.bc.dist<-vegdist(beta.dna.taxa, method = "bray")
+```
+
+Run PERMANOVA using `adonis` function of the **Vegan** package
+
+PERMANOVA - MG-GPM-Taxa - Bray-Curtis
+```{r}
+adonis(dna.tpm.taxa.bc.dist~beta.dna.taxa_veg*beta.dna.taxa_time, data=beta.dna.taxa_groups)
+```
+
+### 7.2. Gene Diversity
+
+Alpha diversity of each potential, annotated metagenome was assessed by the Shannon index. For beta diversity, pairwise similarities among metagenomes were calculated using Bray-Curtis similarity values and visualized with principle coordinates analysis. The difference between treatments was assessed with PERMANOVA.
+
+#### 7.2.1. Alpha Diversity
+
+We calculated alpha diversity based on raw gene counts.  Measurements include **Richness**, **Abundance**, and **Shannon-Wiener Diversity Index (H')**.
+
+```{r}
+# Subset the rpm_all_exp_ann file to prepare for alpha diversity analysis
+cts_dna_all_alpha<-subset(cts_dna_pot_ann, select=c(S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115,S107107,S107108,S107116,S107117,S107119,S107121))
+names(cts_dna_all_alpha)<-c("WS1-T0","WS2-T0","WS3-T0","WS1-T4","WS2-T4","WS3-T4","WS1-T24","WS2-T24","WS3-T24","Tuss1-T0","Tuss2-T0","Tuss1-T4","Tuss2-T4","Tuss1-T24","Tuss3-T24")
+
+# Transpose all but the first column ("ID")
+cts_dna_all_alpha<-as.data.frame(t(cts_dna_all_alpha))
+```
+
+**Richness:** Determine the number of unique genecalls that have more than one count recorded within each sample.
+
+```{r}
+# Sum up the number of non-zero entries per row
+apply(cts_dna_all_alpha>0,1,sum)
+```
+
+**Abundance:** Determine the total abundance of individual genecalls
+
+```{r}
+# sum up the number of non-zero entries per row (1)
+apply(cts_dna_all_alpha,1,sum)
+```
+
+**Shannon-Wiener Diversity Index (H'):** An information index that quantifies the uncertainty associated with predicting the identity of a new genecall given the total number of genecalls and the evenness in count abundances within each genecall.
+
+```{r}
+diversity(cts_dna_all_alpha, index="shannon")
+```
+
+The following table is a summary of the **Alpha Diversity** on the raw gene counts for the **Potential Annotated Genes** (*potential annotated genes for downstream analyses*) by sample.
+
+```{r echo=FALSE}
+dna.experiment<-read.table("Table.Data/dna.alpha.summary.table.txt",sep='\t', quote="", fill=TRUE,header = TRUE)
+names(dna.experiment)<-c("ID", "Tundra", "Time", "Replicate", "Gene Richness","Gene Abundance","Gene Diversity (H')")
+kable(dna.experiment, caption = "Alpha Diversity for Potential Annotated Genecalls in the DNA-based metagenomic sequencing dataset", format.args = list(big.mark = ","), align = "c") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+```{r echo=FALSE}
+alpha.dna.t.test<-read.csv("Stats.Data/alpha.dna.t.test.csv")
+```
+
+Run paired t-test to determine significance.
+```{r}
+t.test(alpha.dna.t.test$Tuss,alpha.dna.t.test$WS,paired=TRUE)
+```
+
+Plot the Alpha Diversity summary.
+
+```{r echo=FALSE}
+alpha.dna<-read.csv("Plot.Data/alpha.dna.boxplot.csv")
+```
+
+```{r}
+# Re-arrange samples for plotting PCoA
+alpha.dna$Tundra <- factor(alpha.dna$Tundra, levels=c("Tuss-MG-T0","Tuss-MG-T4","Tuss-MG-T24","WS-MG-T0","WS-MG-T4","WS-MG-T24"))
+
+alpha.dna.boxplot<-ggplot(alpha.dna, aes(x=Tundra, y=H, fill=Tundra)) + 
+    geom_boxplot() + ylab(expression(atop("Shannon-Wiener", paste("Diversity Index (H')")))) + theme_classic() + theme(axis.title.x=element_blank(), axis.text=element_text(size=10), axis.text.x = element_text(angle = 270, hjust=0, vjust=0.5), axis.title=element_text(size=12), legend.position = "none", legend.title=element_blank(), legend.text=element_text(size=10)) + ylim(11.5,13) + annotate(geom="text", x=3.5, y=13, label="Paired t-test") + annotate("text", x=3.5, y=12.9, size=3, label = "Tundra~(italic(p) < 0.001)", parse = TRUE) + scale_fill_manual(values=c("gray83", "gray83", "gray83", "black", "black", "black"), breaks=c("Tuss-MG-T0", "WS-MG-T0", "Tuss-MG-T4", "WS-MG-T4", "Tuss-MG-T24", "WS-MG-T24"), labels=c("Tuss-MG-T0", "WS-MG-T0", "Tuss-MG-T4", "WS-MG-T4", "Tuss-MG-T24", "WS-MG-T24"))
+```
+
+```{r}
+alpha.dna.boxplot
+```
+
+#### 7.2.2. Beta Diversity
+
+We calculated beta diversity as the variation in gene potential between our two tundra ecosystems using Bray-Curtis similarity values.
+
+##### 7.2.2.1. Subset Data
+
+First, subset the columns of interest from the **gpm_all_pot_ann** object (ID and all samples) to analyze the beta diversity of both ecosystems together. Create a **gpm_groups** object with columns for sample ID, vegetation type, and timepoint to be used for calculating pairwise similiarities among samples via PERMANOVA (*`adonis` from **Vegan** package*)
+
+```{r}
+# Subset the gpm_all_pot_ann file to prepare for beta diversity analysis
+gpm_all_beta<-subset(gpm_all_pot_ann, select=c(ID,S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115,S107107,S107108,S107116,S107117,S107119,S107121))
+names(gpm_all_beta)<-c("ID","WS1-T0","WS2-T0","WS3-T0","WS1-T4","WS2-T4","WS3-T4","WS1-T24","WS2-T24","WS3-T24","Tuss1-T0","Tuss2-T0","Tuss1-T4","Tuss2-T4","Tuss1-T24","Tuss3-T24")
+
+# Remember "ID" column as non-numeric values
+gpm_all_beta_ID<-gpm_all_beta$ID
+
+# Transpose all but the first column ("ID")
+gpm_all_beta<-as.data.frame(t(gpm_all_beta[,-1]))
+colnames(gpm_all_beta)<-gpm_all_beta_ID
+
+# Make gpm_all_groups object
+gpm_all_sample<-c("WS1-T0","WS2-T0","WS3-T0","WS1-T4","WS2-T4","WS3-T4","WS1-T24","WS2-T24","WS3-T24","Tuss1-T0","Tuss2-T0","Tuss1-T4","Tuss2-T4","Tuss1-T24","Tuss3-T24")
+gpm_all_veg<-c("WS","WS","WS","WS","WS","WS","WS","WS","WS","TUSS","TUSS","TUSS","TUSS","TUSS","TUSS")
+gpm_all_time<-c("T0","T0","T0","T4","T4","T4","T24","T24","T24","T0","T0","T4","T4","T24","T24")
+gpm_all_groups<-data.frame(gpm_all_sample,gpm_all_veg,gpm_all_time)
+
+# Convert the values in Column 1 ("gpm_sample") into row names
+rownames(gpm_all_groups)<-gpm_all_groups[,1]
+gpm_all_groups<-gpm_all_groups[,-1]
+```
+
+Second, subset the columns of interest from the **gpm_all_pot_ann** object (ID and all samples) to analyze the beta diversity of the Wet Sedge ecosystem
+
+```{r}
+# Subset the gpm_ws_exp_ann file to prepare for beta diversity analysis
+gpm_ws_beta<-subset(gpm_all_pot_ann, select=c(ID,S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115))
+names(gpm_ws_beta)<-c("ID","WS1-T0","WS2-T0","WS3-T0","WS1-T4","WS2-T4","WS3-T4","WS1-T24","WS2-T24","WS3-T24")
+
+# Remember "ID" column as non-numeric values
+gpm_ws_beta_ID<-gpm_ws_beta$ID
+
+# Transpose all but the first column ("ID")
+gpm_ws_beta<-as.data.frame(t(gpm_ws_beta[,-1]))
+colnames(gpm_ws_beta)<-gpm_ws_beta_ID
+
+# Make gpm_ws_groups object
+gpm_ws_sample<-c("WS1-T0","WS2-T0","WS3-T0","WS1-T4","WS2-T4","WS3-T4","WS1-T24","WS2-T24","WS3-T24")
+gpm_ws_veg<-c("WS","WS","WS","WS","WS","WS","WS","WS","WS")
+gpm_ws_time<-c("T0","T0","T0","T4","T4","T4","T24","T24","T24")
+gpm_ws_groups<-data.frame(gpm_ws_sample,gpm_ws_veg,gpm_ws_time)
+
+# Convert the values in Column 1 ("gpm_sample") into row names
+rownames(gpm_ws_groups)<-gpm_ws_groups[,1]
+gpm_ws_groups<-gpm_ws_groups[,-1]
+```
+
+Third, subset the columns of interest from the **gpm_all_pot_ann** object (ID and all samples) to analyze the beta diversity of the Tussock ecosystem
+
+```{r}
+# Subset the gpm_tuss_exp_ann file to prepare for beta diversity analysis
+gpm_tuss_beta<-subset(gpm_all_pot_ann, select=c(ID,S107107,S107108,S107116,S107117,S107119,S107121))
+names(gpm_tuss_beta)<-c("ID","Tuss1-T0","Tuss2-T0","Tuss1-T4","Tuss2-T4","Tuss1-T24","Tuss3-T24")
+
+# Remember "ID" column as non-numeric values
+gpm_tuss_beta_ID<-gpm_tuss_beta$ID
+
+# Transpose all but the first column ("ID")
+gpm_tuss_beta<-as.data.frame(t(gpm_tuss_beta[,-1]))
+colnames(gpm_tuss_beta)<-gpm_tuss_beta_ID
+
+# Make gpm_tuss_groups object
+gpm_tuss_sample<-c("Tuss1-T0","Tuss2-T0","Tuss1-T4","Tuss2-T4","Tuss1-T24","Tuss3-T24")
+gpm_tuss_veg<-c("TUSS","TUSS","TUSS","TUSS","TUSS","TUSS")
+gpm_tuss_time<-c("T0","T0","T4","T4","T24","T24")
+gpm_tuss_groups<-data.frame(gpm_tuss_sample,gpm_tuss_veg,gpm_tuss_time)
+
+# Convert the values in Column 1 ("gpm_sample") into row names
+rownames(gpm_tuss_groups)<-gpm_tuss_groups[,1]
+gpm_tuss_groups<-gpm_tuss_groups[,-1]
+```
+
+##### 7.2.2.2. Bray-Curtis
+
+Calculate the Bray-Curtis dissimilarity matrix to use with `adonis`
+
+```{r}
+# Bray-Curtis Dissimilarity Matrix for gpm_all_beta
+gpm.all.bc.dist<-vegdist(gpm_all_beta, method = "bray")
+
+# Bray-Curtis Dissimilarity Matrix for gpm_ws_beta
+gpm.ws.bc.dist<-vegdist(gpm_ws_beta, method = "bray")
+
+# Bray-Curtis Dissimilarity Matrix for gpm_tuss_beta
+gpm.tuss.bc.dist<-vegdist(gpm_tuss_beta, method = "bray")
+```
+
+##### 7.2.2.3. PCoA Plots
+
+Principal coordinates analysis (PCoA, also known as metric multidimensional scaling) attempts to represent the distances between samples in a low-dimensional, Euclidean space. In particular, it maximizes the linear correlation between the distances in the distance matrix, and the distances in a space of low dimension (typically, 2 or 3 axes are selected).
+
+The first step of a PCoA is the construction of a (dis)similarity matrix. While PCA (principal component analysis) is based on Euclidean distances, PCoA can handle (dis)similarity matrices calculated from quantitative, semi-quantitative, qualitative, and mixed variables. As always, the choice of (dis)similarity measure is critical and must be suitable to the data in question. For count data, Bray-Curtis distance is recommended. You can use Jaccard index for presence/absence data. When the distance metric is Euclidean, PCoA is equivalent to PCA.
+
+**The first PCoA compares similarity between tundra ecosystems by incorporating the combined dataset.**
+
+```{r}
+# Run PCoA analysis on the Bray-Curtis dissimilarity matrix
+gpm.all.bc.pcoa<-pcoa(gpm.all.bc.dist)
+```
+
+Extract the eigenvalues and calculate the variation explained by each axis.
+
+```{r}
+pcoa.dna.all<-cmdscale(gpm.all.bc.dist, eig=TRUE, k=2)
+pcoa.dna.all
+
+# Calculate the percent variation explained by Axis 1
+pcoa.dna.all.exp.var1<-round(pcoa.dna.all$eig[1] / sum(pcoa.dna.all$eig), 2) * 100
+pcoa.dna.all.exp.var1
+
+# Calculate the percent variation explained by Axis 2
+pcoa.dna.all.exp.var2<-round(pcoa.dna.all$eig[2] / sum(pcoa.dna.all$eig), 2) * 100
+pcoa.dna.all.exp.var2
+
+# Sum the percent variation explained by both axes
+pcoa.dna.all.sum.eig<-sum(pcoa.dna.all.exp.var1, pcoa.dna.all.exp.var2)
+pcoa.dna.all.sum.eig
+```
+
+Plot the PCoA.
+
+```{r}
+# Extract the plot scores from first two PCoA axes
+gpm.all.bc.pcoa.axes <- gpm.all.bc.pcoa$vectors[,c(1,2)]
+
+# Create new object with PCoA axes
+all.dna.bc.pcoa<-data.frame(gpm.all.bc.pcoa.axes)
+
+# Add Timepoint variable to the dataframe
+all.dna.timepoint<-c('WS-MG-T0','WS-MG-T0','WS-MG-T0','WS-MG-T4','WS-MG-T4','WS-MG-T4','WS-MG-T24','WS-MG-T24','WS-MG-T24','Tuss-MG-T0','Tuss-MG-T0','Tuss-MG-T4','Tuss-MG-T4','Tuss-MG-T24','Tuss-MG-T24')
+all.dna.pcoa.1<-all.dna.bc.pcoa$Axis.1
+all.dna.pcoa.2<-all.dna.bc.pcoa$Axis.2
+all.dna.bc.pcoa<-data.frame(all.dna.timepoint,all.dna.pcoa.1,all.dna.pcoa.2)
+
+# Rename column headings
+colnames(all.dna.bc.pcoa)<-c("Timepoint","PCoA_1","PCoA_2")
+
+# Re-arrange samples for plotting PCoA
+all.dna.bc.pcoa$Timepoint <- factor(all.dna.bc.pcoa$Timepoint, levels=c("Tuss-MG-T0","WS-MG-T0","Tuss-MG-T4","WS-MG-T4","Tuss-MG-T24","WS-MG-T24"))
+
+# Plot the PCoA
+all.dna.pcoa<-ggplot(data=all.dna.bc.pcoa, aes(x=PCoA_1, y=PCoA_2, group=Timepoint, color=Timepoint)) + geom_point(aes(shape=Timepoint, size=0.75, fill=Timepoint)) + scale_fill_manual(values=c("gray83", "black", "gray83", "black", "gray83", "black")) + scale_shape_manual(values=c(21,21,22,22,24,24)) + scale_color_manual(values=c("black", "black", "black", "black", "black", "black")) + xlab("PCoA 1 (63%)") + ylab("PCoA 2 (11%)") + theme_classic() + theme(axis.text=element_text(size=10), axis.title=element_text(size=12), legend.position = "bottom", legend.title=element_blank(), legend.text=element_text(size=10)) + guides(shape = guide_legend(override.aes = list(size = 3))) + scale_size(guide="none") + geom_hline(aes(yintercept = 0), color="gray", linetype="dashed") + geom_vline(aes(xintercept=0), color="gray", linetype="dashed") + ylim(-0.6,0.6) + xlim(-0.6,0.6) + annotate(geom="text", x=0.0, y=0.59, label="PERMANOVA")   + annotate("text", x = 0, y = 0.52, size=3, label = "Tundra~(italic(p) == 0.001)", parse = TRUE) + annotate("text", x = 0, y = 0.45, size=3, label = "Time~Point~(italic(p) == 0.755)", parse = TRUE) + annotate("text", x = 0, y = 0.38, size=3, label = "Tundra:Time~Point~(italic(p) == 0.622)", parse = TRUE)
+```
+
+```{r}
+all.dna.pcoa
+```
+
+**The second PCoA compares similarity between sampling time points within the Tussock tundra ecosystem.**
+
+```{r}
+# Run PCoA analysis on the Bray-Curtis dissimilarity matrix
+gpm.tuss.bc.pcoa<-pcoa(gpm.tuss.bc.dist)
+```
+
+Extract the eigenvalues and calculate the variation explained by each axis.
+
+```{r}
+pcoa.dna.tuss<-cmdscale(gpm.tuss.bc.dist, eig=TRUE, k=2)
+pcoa.dna.tuss
+
+# Calculate the percent variation explained by Axis 1
+pcoa.dna.tuss.exp.var1<-round(pcoa.dna.tuss$eig[1] / sum(pcoa.dna.tuss$eig), 2) * 100
+pcoa.dna.tuss.exp.var1
+
+# Calculate the percent variation explained by Axis 2
+pcoa.dna.tuss.exp.var2<-round(pcoa.dna.tuss$eig[2] / sum(pcoa.dna.tuss$eig), 2) * 100
+pcoa.dna.tuss.exp.var2
+
+# Sum the percent variation explained by both axes
+pcoa.dna.tuss.sum.eig<-sum(pcoa.dna.tuss.exp.var1, pcoa.dna.tuss.exp.var2)
+pcoa.dna.tuss.sum.eig
+```
+
+Plot the PCoA.
+
+```{r}
+# Extract the plot scores from first two PCoA axes
+gpm.tuss.bc.pcoa.axes <- gpm.tuss.bc.pcoa$vectors[,c(1,2)]
+
+# Create new object with PCoA axes
+tuss.dna.bc.pcoa<-data.frame(gpm.tuss.bc.pcoa.axes)
+
+# Add Timepoint variable to the dataframe
+tuss.dna.timepoint<-c('Tuss-T0','Tuss-T0','Tuss-T4','Tuss-T4','Tuss-T24','Tuss-T24')
+tuss.dna.pcoa.1<-tuss.dna.bc.pcoa$Axis.1
+tuss.dna.pcoa.2<-tuss.dna.bc.pcoa$Axis.2
+tuss.dna.bc.pcoa<-data.frame(tuss.dna.timepoint,tuss.dna.pcoa.1,tuss.dna.pcoa.2)
+
+# Rename column headings
+colnames(tuss.dna.bc.pcoa)<-c("Timepoint","PCoA_1","PCoA_2")
+#tuss.dna.bc.pcoa
+
+# Re-arrange samples for plotting PCoA
+tuss.dna.bc.pcoa$Timepoint<-factor(tuss.dna.bc.pcoa$Timepoint, levels=c("Tuss-T0","Tuss-T4","Tuss-T24"))
+
+# Plot the PCoA
+tuss.dna.pcoa<-ggplot(data=tuss.dna.bc.pcoa, aes(x=PCoA_1, y=PCoA_2, group=Timepoint, color=Timepoint)) + geom_point(aes(shape=Timepoint, size=0.75, fill=Timepoint)) + scale_fill_manual(values=c("palegreen","green3","darkgreen")) + scale_shape_manual(values=c(21,24,22)) + scale_color_manual(values=c("black","black","black")) + xlab("PCoA 1 (40%)") + ylab("PCoA 2 (27%)") + theme_minimal() + theme(axis.text=element_text(size=12),axis.title=element_text(size=14))+ theme(legend.position = "bottom", legend.title=element_blank(), legend.text=element_text(size=12), panel.background = element_blank(), panel.grid.major=element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "gray"), panel.border = element_rect(colour = "gray", fill=NA, size=1)) + scale_size(guide=FALSE) + guides(shape = guide_legend(override.aes = list(size = 3))) + geom_hline(aes(yintercept = 0), color="gray", linetype="dashed") + geom_vline(aes(xintercept=0), color="gray", linetype="dashed") + ylim(-0.5,0.5) + xlim(-0.5,0.5) + annotate(geom="text", x=0.0, y=0.49, label="PERMANOVA") + annotate("text", x = 0, y = 0.42, size=3, label = "Time~Point~(italic(p) == 0.400)", parse = TRUE)
+```
+
+```{r}
+tuss.dna.pcoa
+```
+
+**The third PCoA compares similarity between sampling time points within the Wet Sedge tundra ecosystem.**
+
+```{r}
+# Run PCoA analysis on the Bray-Curtis dissimilarity matrix
+gpm.ws.bc.pcoa<-pcoa(gpm.ws.bc.dist)
+```
+
+Extract the eigenvalues and calculate the variation explained by each axis.
+
+```{r}
+pcoa.dna.ws<-cmdscale(gpm.ws.bc.dist, eig=TRUE, k=2)
+pcoa.dna.ws
+
+# Calculate the percent variation explained by Axis 1
+pcoa.dna.ws.exp.var1<-round(pcoa.dna.ws$eig[1] / sum(pcoa.dna.ws$eig), 2) * 100
+pcoa.dna.ws.exp.var1
+
+# Calculate the percent variation explained by Axis 2
+pcoa.dna.ws.exp.var2<-round(pcoa.dna.ws$eig[2] / sum(pcoa.dna.ws$eig), 2) * 100
+pcoa.dna.ws.exp.var2
+
+# Sum the percent variation explained by both axes
+pcoa.dna.ws.sum.eig<-sum(pcoa.dna.ws.exp.var1, pcoa.dna.ws.exp.var2)
+pcoa.dna.ws.sum.eig
+```
+
+Plot the PCoA.
+
+```{r}
+# Extract the plot scores from first two PCoA axes
+gpm.ws.bc.pcoa.axes <- gpm.ws.bc.pcoa$vectors[,c(1,2)]
+
+# Create new object with PCoA axes
+ws.dna.bc.pcoa<-data.frame(gpm.ws.bc.pcoa.axes)
+
+# Add Timepoint variable to the dataframe
+ws.dna.timepoint<-c('WS-T0','WS-T0','WS-T0','WS-T4','WS-T4','WS-T4','WS-T24','WS-T24','WS-T24')
+ws.dna.pcoa.1<-ws.dna.bc.pcoa$Axis.1
+ws.dna.pcoa.2<-ws.dna.bc.pcoa$Axis.2
+ws.dna.bc.pcoa<-data.frame(ws.dna.timepoint,ws.dna.pcoa.1,ws.dna.pcoa.2)
+
+# Rename column headings
+colnames(ws.dna.bc.pcoa)<-c("Timepoint","PCoA_1","PCoA_2")
+#ws.dna.bc.pcoa
+
+# Re-arrange samples for plotting PCoA
+ws.dna.bc.pcoa$Timepoint<-factor(ws.dna.bc.pcoa$Timepoint, levels=c("WS-T0","WS-T4","WS-T24"))
+
+# Plot the PCoA
+ws.dna.pcoa<-ggplot(data=ws.dna.bc.pcoa, aes(x=PCoA_1, y=PCoA_2, group=Timepoint, color=Timepoint)) + geom_point(aes(shape=Timepoint, size=0.75, fill=Timepoint)) + scale_fill_manual(values=c("black","black","black")) + scale_shape_manual(values=c(21,24,22)) + scale_color_manual(values=c("gray83","gray83","gray83")) + xlab("PCoA 1 (47%)") + ylab("PCoA 2 (18%)") + theme_minimal() + theme(axis.text=element_text(size=12),axis.title=element_text(size=14))+ theme(legend.position = "bottom", legend.title=element_blank(), legend.text=element_text(size=12), panel.background = element_blank(), panel.grid.major=element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "gray"), panel.border = element_rect(colour = "gray", fill=NA, size=1)) + scale_size(guide=FALSE) + guides(shape = guide_legend(override.aes = list(size = 3))) + geom_hline(aes(yintercept = 0), color="gray", linetype="dashed") + geom_vline(aes(xintercept=0), color="gray", linetype="dashed") + ylim(-0.5,0.5) + xlim(-0.5,0.5) + annotate(geom="text", x=0.0, y=0.49, label="PERMANOVA") + annotate("text", x = 0, y = 0.42, size=3, label = "Time~Point~(italic(p) == 0.916)", parse = TRUE)
+```
+
+```{r}
+ws.dna.pcoa
+```
+
+##### 7.2.2.4. PERMANOVA
+
+- Run PERMANOVA using `adonis` function of the **Vegan** package
+
+PERMANOVA - GPM-All - Bray-Curtis
+```{r}
+adonis(gpm.all.bc.dist~gpm_all_veg*gpm_all_time, data=gpm_all_groups)
+```
+
+PERMANOVA - GPM-Tuss - Bray-Curtis
+```{r}
+adonis(gpm.tuss.bc.dist~gpm_tuss_time, data=gpm_tuss_groups)
+```
+
+PERMANOVA - GPM-WS - Bray-Curtis
+```{r}
+adonis(gpm.ws.bc.dist~gpm_ws_time, data=gpm_ws_groups)
+```
+
+### 7.3. KEGG Tier Patterns
+
+Look for differences in gene expression at multiple KEGG tier levels (II-IV) using GPM-normalized values.
+
+#### 7.3.1. Tussock Tundra
+
+Look at differences in gene expression patterns for multiple Tier levels within the Tussock tundra between sampling time points.
+
+##### 7.3.1.1. Tier II Expression
+```{r}
+# Calculate GPM-normalized gene count sums for each Tuss sample in each Tier II category
+tuss_dna_tII_sum<-gpm_all_pot_ann %>% group_by(Tier_II) %>% summarise_at(vars("S107107","S107108","S107116","S107117","S107119","S107121"), sum)
+
+tuss_dna_tII_sum<-tuss_dna_tII_sum %>% mutate_at(vars(S107107,S107108,S107116,S107117,S107119,S107121), funs(round(., 0)))
+
+tuss_dna_tII_sum<-as.data.frame(tuss_dna_tII_sum)
+
+tuss_dna_tII_sum<-tuss_dna_tII_sum[order(-tuss_dna_tII_sum$S107107),]
+```
+
+Heatmap for Tier II categories by sampling timepoints
+```{r}
+# Create copy of "ws_tII_sum" object to prep for heatmap
+tuss_dna_tII_heatmap<-tuss_dna_tII_sum
+
+# Convert the first column (Tier categories) into rownames
+rownames(tuss_dna_tII_heatmap) <- tuss_dna_tII_heatmap$Tier_II
+tuss_dna_tII_heatmap<-as.data.frame(tuss_dna_tII_heatmap[-1])
+
+# Rename columns to sample IDs
+colnames(tuss_dna_tII_heatmap)<-c("Tuss1-T0","Tuss2-T0","Tuss1-T4","Tuss2-T4","Tuss1-T24","Tuss3-T24")
+
+# Remove rows for "Organismal Systems" and "Human Diseases"
+#tuss_dna_tII_heatmap <- tuss_dna_tII_heatmap[-c(5,6),]
+
+# Convert dataframe into a matrix for heatmap
+tuss_dna_tII_heatmap<-as.matrix(tuss_dna_tII_heatmap)
+
+# Scale matrix values to generate Z-scores
+tuss_dna_tII_heatmap<-scale(t(tuss_dna_tII_heatmap))
+
+tuss_dna_tII_heatmap<-t(tuss_dna_tII_heatmap)
+
+# Specify RColorBrewer custom color palette
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+
+# Pheatmap
+pheatmap(tuss_dna_tII_heatmap, treeheight_row = 0, treeheight_col = 0,cluster_rows = FALSE, cluster_cols = FALSE)
+```
+
+Summed values by replicate for each KEGG tier II category.
+```{r echo=FALSE}
+kable(tuss_dna_tII_sum, caption = "Tussock Tier II KEGG category summary by sample.", format.args = list(big.mark=",")) %>% kable_styling(bootstrap_options = c("striped","hover","condensed"))
+```
+
+Calculate mean values from the replicate sums
+```{r}
+# Calculate mean values from the replicate sums
+tuss_dna_tII_sum$meantuss_T0<-apply(tuss_dna_tII_sum[,2:3], 1, mean)
+tuss_dna_tII_sum$meantuss_T4<-apply(tuss_dna_tII_sum[,4:5], 1, mean)
+tuss_dna_tII_sum$meantuss_T24<-apply(tuss_dna_tII_sum[,6:7], 1, mean)
+tuss_dna_tII_sum<-tuss_dna_tII_sum %>% mutate_at(vars(meantuss_T0,meantuss_T4,meantuss_T24), funs(round(., 0)))
+
+# Calculate sd values from the replicate sums
+tuss_dna_tII_sum$sdtuss_T0<-apply(tuss_dna_tII_sum[,2:3], 1, sd)
+tuss_dna_tII_sum$sdtuss_T4<-apply(tuss_dna_tII_sum[,4:5], 1, sd)
+tuss_dna_tII_sum$sdtuss_T24<-apply(tuss_dna_tII_sum[,6:7], 1, sd)
+tuss_dna_tII_sum<-tuss_dna_tII_sum %>% mutate_at(vars(sdtuss_T0,sdtuss_T4,sdtuss_T24), funs(round(., 0)))
+
+# Subset Mean values
+tuss_dna_tII_mean<-subset(tuss_dna_tII_sum, select=c(Tier_II,meantuss_T0,meantuss_T4,meantuss_T24))
+names(tuss_dna_tII_mean)<-c("Tier II", "Tuss-T0", "Tuss-T4", "Tuss-T24")
+
+# Subset SD values
+tuss_dna_tII_sd<-subset(tuss_dna_tII_sum, select=c(Tier_II,sdtuss_T0,sdtuss_T4,sdtuss_T24))
+names(tuss_dna_tII_sd)<-c("Tier II", "Tuss-T0", "Tuss-T4", "Tuss-T24")
+
+# Remember "Tier II" as non-numeric values
+tuss_dna_tII_mean_TierII<-tuss_dna_tII_mean$`Tier II`
+tuss_dna_tII_sd_TierII<-tuss_dna_tII_sd$`Tier II`
+
+# Transpose all but first column (Tier II)
+tuss_dna_tII_mean<-as.data.frame(t(tuss_dna_tII_mean[,-1]))
+colnames(tuss_dna_tII_mean)<-tuss_dna_tII_mean_TierII
+tuss_dna_tII_sd<-as.data.frame(t(tuss_dna_tII_sd[,-1]))
+colnames(tuss_dna_tII_sd)<-tuss_dna_tII_sd_TierII
+
+# Combine mean and sd into single column with ± divider
+tuss_dna_tII_table<-as.data.frame(do.call(cbind, lapply(1:ncol(tuss_dna_tII_mean), function(i) paste0(tuss_dna_tII_mean[ , i], " ± ", tuss_dna_tII_sd[ , i]))))
+
+# Transpose the table back
+tuss_dna_tII_table<-t(tuss_dna_tII_table)
+
+# Rename columns to Sites
+colnames(tuss_dna_tII_table)<-c("Tussock (T0)", "Tussock (T4)", "Tussock (T24)")
+
+rownames(tuss_dna_tII_table)<-tuss_dna_tII_mean_TierII
+
+kable(tuss_dna_tII_table, caption = "Tussock Tier II KEGG category averages (± standard deviation) by sample for Metagenomes.", format.args = list(big.mark=","), align = "l") %>% kable_styling(bootstrap_options = c("striped","hover","condensed"))
+```
+
+Run statistical tests to determine if significant differences exist between sampling timepoints for each Tier KEGG category in the metagenome. Click on the **Show/Hide** button to see the statistics.
+
+<button class="btn btn-primary" data-toggle="collapse" data-target="#BlockName56"> Show/Hide </button>  
+<div id="BlockName56" class="collapse">
+```{r}
+# Subset the "sum" values for each sample
+tuss_dna_tII_stats<-subset(tuss_dna_tII_sum, select=c(Tier_II,S107107,S107108,S107116,S107117,S107119,S107121))
+
+rownames(tuss_dna_tII_stats) <- tuss_dna_tII_stats$Tier_II
+tuss_dna_tII_stats<-as.data.frame(t(tuss_dna_tII_stats[-1]))
+
+# Create a column with timepoint variable names
+Timepoint<-c("T0","T0","T4","T4","T24","T24")
+Timepoint<-data.frame(Timepoint)
+
+# Add the timepoint column to the sum table
+tuss_dna_tII_stats<-data.frame(Timepoint,tuss_dna_tII_stats)
+
+# Subset response variables for MANOVA
+tuss_dna_tII_stats$response <- as.matrix(tuss_dna_tII_stats[, 2:5])
+
+# MANOVA test
+tuss_dna_tII_manova <- manova(response ~ Timepoint, data=tuss_dna_tII_stats)
+summary.aov(tuss_dna_tII_manova)
+```
+
+Run ANOVA for each category of interest (significant in MANOVA)
+```{r}
+# Metabolism
+tuss_dna_tII_aov1<-aov(Metabolism.~Timepoint,data=tuss_dna_tII_stats)
+summary.aov(tuss_dna_tII_aov1)
+TukeyHSD(tuss_dna_tII_aov1)
+
+# Genetic Information Processing
+tuss_dna_tII_aov2<-aov(Genetic.Information.Processing.~Timepoint,data=tuss_dna_tII_stats)
+summary.aov(tuss_dna_tII_aov2)
+TukeyHSD(tuss_dna_tII_aov2)
+
+# Environmental Information Processing
+tuss_dna_tII_aov3<-aov(Environmental.Information.Processing.~Timepoint,data=tuss_dna_tII_stats)
+summary.aov(tuss_dna_tII_aov3)
+TukeyHSD(tuss_dna_tII_aov3)
+
+# Cellular Processing
+tuss_dna_tII_aov4<-aov(Cellular.Processes.~Timepoint,data=tuss_dna_tII_stats)
+summary.aov(tuss_dna_tII_aov4)
+TukeyHSD(tuss_dna_tII_aov4)
+```
+</div>
+
+Plot the KEGG tier II categories as a barchart.
+```{r, echo=FALSE}
+tuss_dna_tII_bardata<-read.csv("Plot.Data/tuss_dna_tII_barplot.csv")
+```
+
+```{r}
+# Place the KEGG tier II categories in the preferred order for plotting
+tuss_dna_tII_bardata$Tier.II <- factor(tuss_dna_tII_bardata$Tier.II,levels = c("Metabolism", "Genetic Information Processing", "Environmental Information Processing", "Cellular Processes"))
+
+tuss_dna_tII_bardata$Sample <- factor(tuss_dna_tII_bardata$Sample,levels=c("Tuss-T0","Tuss-T4","Tuss-T24"))
+
+tuss_dna_tII_barplot<-ggplot(tuss_dna_tII_bardata, aes(x = Tier.II, y = Mean, fill = Sample)) + geom_bar(stat = "identity", position = "dodge", color="black") + geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, position = position_dodge(0.9)) + ylab(expression(atop("KEGG Tier II Categories", paste("Gene Counts (GPM)")))) + theme_minimal() + theme(axis.text=element_text(size=10), axis.title=element_text(size=12), axis.title.x=element_blank()) + theme(legend.position = "bottom", legend.title=element_blank(), legend.text=element_text(size=10), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "gray"), panel.border = element_rect(colour = "gray", fill=NA, size=1)) + scale_size(guide=FALSE) + scale_fill_manual(values=c("palegreen", "green3", "darkgreen")) + scale_x_discrete(labels = function(Tier.II) str_wrap(Tier.II, width = 10)) + ylim(0,800000) + annotate(geom="text", x=1.0, y=777500, label="italic(N.S.)", parse=TRUE) + annotate(geom="text", x=2.0, y=250000, label="italic(N.S.)", parse=TRUE) + annotate(geom="text", x=3.0, y=200000, label="italic(N.S.)", parse=TRUE) + annotate(geom="text", x=4.0, y=150000, label="italic(N.S.)", parse=TRUE)
+```
+
+```{r}
+tuss_dna_tII_barplot
+```
+
+##### 7.3.1.2. Tier III Expression
+
+Calculate GPM-normalized gene count sums for each Tuss sample in each Tier III category.
+```{r}
+# Calculate GPM-normalized gene count sums for each Tuss sample in each Tier III category
+tuss_dna_tIII_sum<-gpm_all_pot_ann %>% group_by(Tier_III) %>% summarise_at(vars("S107107","S107108","S107116","S107117","S107119","S107121"), sum)
+tuss_dna_tIII_sum<-tuss_dna_tIII_sum %>% mutate_at(vars(S107107,S107108,S107116,S107117,S107119,S107121), funs(round(., 0)))
+tuss_dna_tIII_sum<-as.data.frame(tuss_dna_tIII_sum)
+tuss_dna_tIII_sum<-tuss_dna_tIII_sum[order(-tuss_dna_tIII_sum$S107107),]
+```
+
+```{r}
+# Calculate mean values from the replicate sums
+tuss_dna_tIII_sum$meantuss_T0<-apply(tuss_dna_tIII_sum[,2:3], 1, mean)
+tuss_dna_tIII_sum$meantuss_T4<-apply(tuss_dna_tIII_sum[,4:5], 1, mean)
+tuss_dna_tIII_sum$meantuss_T24<-apply(tuss_dna_tIII_sum[,6:7], 1, mean)
+tuss_dna_tIII_sum<-tuss_dna_tIII_sum %>% mutate_at(vars(meantuss_T0,meantuss_T4,meantuss_T24), funs(round(., 0)))
+
+# Calculate sd values from the replicate sums
+tuss_dna_tIII_sum$sdtuss_T0<-apply(tuss_dna_tIII_sum[,2:3], 1, sd)
+tuss_dna_tIII_sum$sdtuss_T4<-apply(tuss_dna_tIII_sum[,4:5], 1, sd)
+tuss_dna_tIII_sum$sdtuss_T24<-apply(tuss_dna_tIII_sum[,6:7], 1, sd)
+tuss_dna_tIII_sum<-tuss_dna_tIII_sum %>% mutate_at(vars(sdtuss_T0,sdtuss_T4,sdtuss_T24), funs(round(., 0)))
+
+# Write data to .csv file
+write.csv(tuss_dna_tIII_sum, 'Norm.Results/tuss.dna.tIII.mean.sd.csv')
+
+# Subset Mean values
+tuss_dna_tIII_mean<-subset(tuss_dna_tIII_sum, select=c(Tier_III,meantuss_T0,meantuss_T4,meantuss_T24))
+names(tuss_dna_tIII_mean)<-c("Tier III", "Tuss-T0", "Tuss-T4", "Tuss-T24")
+
+# Subset SD values
+tuss_dna_tIII_sd<-subset(tuss_dna_tIII_sum, select=c(Tier_III,sdtuss_T0,sdtuss_T4,sdtuss_T24))
+names(tuss_dna_tIII_sd)<-c("Tier III", "Tuss-T0", "Tuss-T4", "Tuss-T24")
+
+# Remember "Tier III" as non-numeric values
+tuss_dna_tIII_mean_TierIII<-tuss_dna_tIII_mean$`Tier III`
+tuss_dna_tIII_sd_TierIII<-tuss_dna_tIII_sd$`Tier III`
+
+# Transpose all but first column (Tier II)
+tuss_dna_tIII_mean<-as.data.frame(t(tuss_dna_tIII_mean[,-1]))
+colnames(tuss_dna_tIII_mean)<-tuss_dna_tIII_mean_TierIII
+tuss_dna_tIII_sd<-as.data.frame(t(tuss_dna_tIII_sd[,-1]))
+colnames(tuss_dna_tIII_sd)<-tuss_dna_tIII_sd_TierIII
+
+# Combine mean and sd into single column with ± divider
+tuss_dna_tIII_table<-as.data.frame(do.call(cbind, lapply(1:ncol(tuss_dna_tIII_mean), function(i) paste0(tuss_dna_tIII_mean[ , i], " ± ", tuss_dna_tIII_sd[ , i]))))
+
+# Transpose the table back
+tuss_dna_tIII_table<-t(tuss_dna_tIII_table)
+
+# Rename columns to Sites
+colnames(tuss_dna_tIII_table)<-c("Tussock (T0)", "Tussock (T4)", "Tussock (T24)")
+
+rownames(tuss_dna_tIII_table)<-tuss_dna_tIII_mean_TierIII
+
+#tuss_dna_tIII_table
+```
+
+Run statistical tests to determine if significant differences exist between sampling timepoints for each Tier KEGG category. Click on the **Show/Hide** button to see the statistics.
+
+<button class="btn btn-primary" data-toggle="collapse" data-target="#BlockName57"> Show/Hide </button>  
+<div id="BlockName57" class="collapse">
+```{r}
+# Subset the "sum" values for each sample
+tuss_dna_tIII_stats<-subset(tuss_dna_tIII_sum, select=c(Tier_III,S107107,S107108,S107116,S107117,S107119,S107121))
+
+rownames(tuss_dna_tIII_stats) <- tuss_dna_tIII_stats$Tier_III
+tuss_dna_tIII_stats<-as.data.frame(t(tuss_dna_tIII_stats[-1]))
+
+# Add the timepoint column to the sum table
+tuss_dna_tIII_stats<-data.frame(Timepoint,tuss_dna_tIII_stats)
+
+# Subset response variables for MANOVA
+tuss_dna_tIII_stats$response <- as.matrix(tuss_dna_tIII_stats[, 2:26])
+
+# MANOVA test
+tuss_dna_tIII_manova <- manova(response ~ Timepoint, data=tuss_dna_tIII_stats)
+summary.aov(tuss_dna_tIII_manova)
+```
+</div>
+
+##### 7.3.1.3. Tier IV Expression
+
+Calculate GPM-normalized gene count sums for each Tuss sample in each Tier IV category.
+```{r}
+# Calculate GPM-normalized gene count sums for each Tuss sample in each Tier III category
+tuss_dna_tIV_sum<-gpm_all_pot_ann %>% group_by(Tier_IV) %>% summarise_at(vars("S107107","S107108","S107116","S107117","S107119","S107121"), sum)
+tuss_dna_tIV_sum<-tuss_dna_tIV_sum %>% mutate_at(vars(S107107,S107108,S107116,S107117,S107119,S107121), funs(round(., 0)))
+tuss_dna_tIV_sum<-as.data.frame(tuss_dna_tIV_sum)
+tuss_dna_tIV_sum<-tuss_dna_tIV_sum[order(-tuss_dna_tIV_sum$S107107),]
+```
+
+```{r}
+# Calculate mean values from the replicate sums
+tuss_dna_tIV_sum$meantuss_T0<-apply(tuss_dna_tIV_sum[,2:3], 1, mean)
+tuss_dna_tIV_sum$meantuss_T4<-apply(tuss_dna_tIV_sum[,4:5], 1, mean)
+tuss_dna_tIV_sum$meantuss_T24<-apply(tuss_dna_tIV_sum[,6:7], 1, mean)
+tuss_dna_tIV_sum<-tuss_dna_tIV_sum %>% mutate_at(vars(meantuss_T0,meantuss_T4,meantuss_T24), funs(round(., 0)))
+
+# Calculate sd values from the replicate sums
+tuss_dna_tIV_sum$sdtuss_T0<-apply(tuss_dna_tIV_sum[,2:3], 1, sd)
+tuss_dna_tIV_sum$sdtuss_T4<-apply(tuss_dna_tIV_sum[,4:5], 1, sd)
+tuss_dna_tIV_sum$sdtuss_T24<-apply(tuss_dna_tIV_sum[,6:7], 1, sd)
+tuss_dna_tIV_sum<-tuss_dna_tIV_sum %>% mutate_at(vars(sdtuss_T0,sdtuss_T4,sdtuss_T24), funs(round(., 0)))
+
+# Write data to .csv file
+write.csv(tuss_dna_tIV_sum, 'Norm.Results/tuss.dna.tIV.mean.sd.csv')
+
+# Subset Mean values
+tuss_dna_tIV_mean<-subset(tuss_dna_tIV_sum, select=c(Tier_IV,meantuss_T0,meantuss_T4,meantuss_T24))
+names(tuss_dna_tIV_mean)<-c("Tier IV", "Tuss-T0", "Tuss-T4", "Tuss-T24")
+
+# Subset SD values
+tuss_dna_tIV_sd<-subset(tuss_dna_tIV_sum, select=c(Tier_IV,sdtuss_T0,sdtuss_T4,sdtuss_T24))
+names(tuss_dna_tIV_sd)<-c("Tier IV", "Tuss-T0", "Tuss-T4", "Tuss-T24")
+
+# Remember "Tier IV" as non-numeric values
+tuss_dna_tIV_mean_TierIV<-tuss_dna_tIV_mean$`Tier IV`
+tuss_dna_tIV_sd_TierIV<-tuss_dna_tIV_sd$`Tier IV`
+
+# Transpose all but first column (Tier IV)
+tuss_dna_tIV_mean<-as.data.frame(t(tuss_dna_tIV_mean[,-1]))
+colnames(tuss_dna_tIV_mean)<-tuss_dna_tIV_mean_TierIV
+tuss_dna_tIV_sd<-as.data.frame(t(tuss_dna_tIV_sd[,-1]))
+colnames(tuss_dna_tIV_sd)<-tuss_dna_tIV_sd_TierIV
+
+# Combine mean and sd into single column with ± divider
+tuss_dna_tIV_table<-as.data.frame(do.call(cbind, lapply(1:ncol(tuss_dna_tIV_mean), function(i) paste0(tuss_dna_tIV_mean[ , i], " ± ", tuss_dna_tIV_sd[ , i]))))
+
+# Transpose the table back
+tuss_dna_tIV_table<-t(tuss_dna_tIV_table)
+
+# Rename columns to Sites
+colnames(tuss_dna_tIV_table)<-c("Tussock (T0)", "Tussock (T4)", "Tussock (T24)")
+
+rownames(tuss_dna_tIV_table)<-tuss_dna_tIV_mean_TierIV
+
+#tuss_dna_tIV_table
+```
+
+#### 7.3.2. Wet Sedge Tundra
+
+Look at differences in gene expression patterns for multiple Tier levels within the Wet Sedge tundra between sampling time points.
+
+##### 7.3.2.1. Tier II Expression
+
+Calculate GPM-normalized gene count sums for each WS sample in each Tier II category.
+```{r}
+# Calculate GPM-normalized gene count sums for each WS sample in each Tier II category
+ws_dna_tII_sum<-gpm_all_pot_ann %>% group_by(Tier_II) %>% summarise_at(vars("S107104","S107105","S107106","S107110","S107111","S107112","S107113","S107114","S107115"), sum)
+
+ws_dna_tII_sum<-ws_dna_tII_sum %>% mutate_at(vars(S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115), funs(round(., 0)))
+
+ws_dna_tII_sum<-as.data.frame(ws_dna_tII_sum)
+
+ws_dna_tII_sum<-ws_dna_tII_sum[order(-ws_dna_tII_sum$S107104),]
+```
+
+```{r echo=FALSE}
+kable(ws_dna_tII_sum, caption = "Wet Sedge Tier II KEGG category summary by sample in Metagenome.", format.args = list(big.mark=",")) %>% kable_styling(bootstrap_options = c("striped","hover","condensed"))
+```
+
+Heatmap for Tier II categories by sampling timepoints
+```{r}
+# Create copy of "ws_dna_tII_sum" object to prep for heatmap
+ws_dna_tII_heatmap<-ws_dna_tII_sum
+
+# Convert the first column (Tier categories) into rownames
+rownames(ws_dna_tII_heatmap) <- ws_dna_tII_heatmap$Tier_II
+ws_dna_tII_heatmap<-as.data.frame(ws_dna_tII_heatmap[-1])
+
+# Rename columns to sample IDs
+colnames(ws_dna_tII_heatmap)<-c("WS1-T0","WS2-T0","WS3-T0","WS1-T4","WS2-T4","WS3-T4","WS1-T24","WS2-T24","WS3-T24")
+
+# Remove rows for "Organismal Systems" and "Human Diseases"
+#ws_dna_tII_heatmap <- ws_dna_tII_heatmap[-c(5,6),]
+
+# Convert dataframe into a matrix for heatmap
+ws_dna_tII_heatmap<-as.matrix(ws_dna_tII_heatmap)
+
+# Scale matrix values to generate Z-scores
+ws_dna_tII_heatmap<-scale(t(ws_dna_tII_heatmap))
+
+ws_dna_tII_heatmap<-t(ws_dna_tII_heatmap)
+
+# Specify RColorBrewer custom color palette
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+
+# Pheatmap
+pheatmap(ws_dna_tII_heatmap, treeheight_row = 0, treeheight_col = 0,cluster_rows = FALSE, cluster_cols = FALSE)
+```
+
+Calculate mean values from the replicate sums.
+```{r}
+# Calculate mean values from the replicate sums
+ws_dna_tII_sum$meanWS_T0<-apply(ws_dna_tII_sum[,2:4], 1, mean)
+ws_dna_tII_sum$meanWS_T4<-apply(ws_dna_tII_sum[,5:7], 1, mean)
+ws_dna_tII_sum$meanWS_T24<-apply(ws_dna_tII_sum[,8:10], 1, mean)
+ws_dna_tII_sum<-ws_dna_tII_sum %>% mutate_at(vars(meanWS_T0,meanWS_T4,meanWS_T24), funs(round(., 0)))
+
+# Calculate sd values from the replicate sums
+ws_dna_tII_sum$sdWS_T0<-apply(ws_dna_tII_sum[,2:4], 1, sd)
+ws_dna_tII_sum$sdWS_T4<-apply(ws_dna_tII_sum[,5:7], 1, sd)
+ws_dna_tII_sum$sdWS_T24<-apply(ws_dna_tII_sum[,8:10], 1, sd)
+ws_dna_tII_sum<-ws_dna_tII_sum %>% mutate_at(vars(sdWS_T0,sdWS_T4,sdWS_T24), funs(round(., 0)))
+
+# Subset Mean values
+ws_dna_tII_mean<-subset(ws_dna_tII_sum, select=c(Tier_II,meanWS_T0,meanWS_T4,meanWS_T24))
+names(ws_dna_tII_mean)<-c("Tier II", "WS - T0", "WS - T4", "WS - T24")
+
+# Subset SD values
+ws_dna_tII_sd<-subset(ws_dna_tII_sum, select=c(Tier_II,sdWS_T0,sdWS_T4,sdWS_T24))
+names(ws_dna_tII_sd)<-c("Tier II", "WS - T0", "WS - T4", "WS - T24")
+
+# Remember "Tier II" as non-numeric values
+ws_dna_tII_mean_TierII<-ws_dna_tII_mean$`Tier II`
+ws_dna_tII_sd_TierII<-ws_dna_tII_sd$`Tier II`
+
+# Transpose all but first column (Tier II)
+ws_dna_tII_mean<-as.data.frame(t(ws_dna_tII_mean[,-1]))
+colnames(ws_dna_tII_mean)<-ws_dna_tII_mean_TierII
+ws_dna_tII_sd<-as.data.frame(t(ws_dna_tII_sd[,-1]))
+colnames(ws_dna_tII_sd)<-ws_dna_tII_sd_TierII
+
+# Combine mean and sd into single column with ± divider
+ws_dna_tII_table<-as.data.frame(do.call(cbind, lapply(1:ncol(ws_dna_tII_mean), function(i) paste0(ws_dna_tII_mean[ , i], " ± ", ws_dna_tII_sd[ , i]))))
+
+# Transpose the table back
+ws_dna_tII_table<-t(ws_dna_tII_table)
+
+# Rename columns to Sites
+colnames(ws_dna_tII_table)<-c("Wet Sedge (T0)", "Wet Sedge (T4)", "Wet Sedge (T24)")
+
+rownames(ws_dna_tII_table)<-ws_dna_tII_mean_TierII
+
+kable(ws_dna_tII_table, caption = "Wet Sedge Tier II KEGG category averages (± standard deviation) by sample.", format.args = list(big.mark=","), align = "l") %>% kable_styling(bootstrap_options = c("striped","hover","condensed"))
+```
+
+Run statistical tests to determine if significant differences exist between sampling timepoints for each Tier KEGG category. Click on the **Show/Hide** button to see the statistics.
+
+<button class="btn btn-primary" data-toggle="collapse" data-target="#BlockName59"> Show/Hide </button>  
+<div id="BlockName59" class="collapse">
+```{r}
+# Subset the "sum" values for each sample
+ws_dna_tII_stats<-subset(ws_dna_tII_sum, select=c(Tier_II,S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115))
+
+rownames(ws_dna_tII_stats) <- ws_dna_tII_stats$Tier_II
+ws_dna_tII_stats<-as.data.frame(t(ws_dna_tII_stats[-1]))
+
+# Create Timepoint object for WS_DNA (9 samples)
+Timepoint2<-c("T0","T0","T0","T4","T4","T4","T24","T24","T24")
+Timepoint2<-data.frame(Timepoint2)
+
+# Add the timepoint column to the sum table
+ws_dna_tII_stats<-data.frame(Timepoint2,ws_dna_tII_stats)
+
+# Subset response variables for MANOVA
+ws_dna_tII_stats$response <- as.matrix(ws_dna_tII_stats[, 2:5])
+
+# MANOVA test
+ws_dna_tII_manova <- manova(response ~ Timepoint2, data=ws_dna_tII_stats)
+summary.aov(ws_dna_tII_manova)
+```
+</div>
+
+Plot a barchart for Tier II categories by sampling timepoints.
+```{r echo=FALSE}
+ws_dna_tII_bardata<-read.csv("Plot.Data/ws_dna_tII_barplot.csv")
+```
+
+```{r}
+# Place Tier II categories in the preferred order for plotting
+ws_dna_tII_bardata$Tier.II <- factor(ws_dna_tII_bardata$Tier.II,levels = c("Metabolism", "Genetic Information Processing", "Environmental Information Processing", "Cellular Processes"))
+
+ws_dna_tII_bardata$Sample <- factor(ws_dna_tII_bardata$Sample,levels=c("WS-T0","WS-T4","WS-T24"))
+
+ws_dna_tII_barplot<-ggplot(ws_dna_tII_bardata, aes(x = Tier.II, y = Mean, fill = Sample)) + geom_bar(stat = "identity", position = "dodge", color="black") + geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, position = position_dodge(0.9)) + ylab(expression(atop("KEGG Tier II Categories", paste("Gene Counts (GPM)")))) + theme_minimal() + theme(axis.text=element_text(size=10), axis.title=element_text(size=12), axis.title.x=element_blank()) + theme(legend.position = "bottom", legend.title=element_blank(), legend.text=element_text(size=10), panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "gray"), panel.border = element_rect(colour = "gray", fill=NA, size=1)) + scale_size(guide=FALSE) + scale_fill_manual(values=c("lightskyblue1","dodgerblue1","midnightblue")) +
+  scale_x_discrete(labels = function(Tier.II) str_wrap(Tier.II, width = 10)) + ylim(0,800000) + annotate(geom="text", x=1.0, y=750000, label="italic(N.S.)", parse=TRUE) + annotate(geom="text", x=2.0, y=250000, label="italic(N.S.)", parse=TRUE) + annotate(geom="text", x=3.0, y=200000, label="italic(N.S.)", parse=TRUE) + annotate(geom="text", x=4.0, y=150000, label="italic(N.S.)", parse=TRUE)
+```
+
+```{r}
+ws_dna_tII_barplot
+```
+
+```{r echo=FALSE, eval=FALSE}
+# Save the TUNDRA BETA DIVERSITY plots and TUNDRA TIER II plots together
+setEPS()
+postscript("Fig.Div.KEGG.eps", width=10.0, height = 8.0)
+ggarrange(tuss.pcoa, ws.pcoa, tuss_tII_barplot, ws_tII_barplot, heights=c(3,3),
+          labels = c("A","B","C","D"),
+          ncol = 2, nrow = 2, align="v")
+dev.off()
+```
+
+##### 7.3.2.2. Tier III Expression
+
+Calculate GPM-normalized gene count sums for each WS sample in each Tier III category.
+```{r}
+# Calculate GPM-normalized gene count sums for each WS sample in each Tier III category
+ws_dna_tIII_sum<-gpm_all_pot_ann %>% group_by(Tier_III) %>% summarise_at(vars("S107104","S107105","S107106","S107110","S107111","S107112","S107113","S107114","S107115"), sum)
+ws_dna_tIII_sum<-ws_dna_tIII_sum %>% mutate_at(vars(S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115), funs(round(., 0)))
+ws_dna_tIII_sum<-as.data.frame(ws_dna_tIII_sum)
+ws_dna_tIII_sum<-ws_dna_tIII_sum[order(-ws_dna_tIII_sum$S107104),]
+```
+
+```{r}
+# Calculate mean values from the replicate sums
+ws_dna_tIII_sum$meanWS_T0<-apply(ws_dna_tIII_sum[,2:4], 1, mean)
+ws_dna_tIII_sum$meanWS_T4<-apply(ws_dna_tIII_sum[,5:7], 1, mean)
+ws_dna_tIII_sum$meanWS_T24<-apply(ws_dna_tIII_sum[,8:10], 1, mean)
+ws_dna_tIII_sum<-ws_dna_tIII_sum %>% mutate_at(vars(meanWS_T0,meanWS_T4,meanWS_T24), funs(round(., 0)))
+
+# Calculate sd values from the replicate sums
+ws_dna_tIII_sum$sdWS_T0<-apply(ws_dna_tIII_sum[,2:4], 1, sd)
+ws_dna_tIII_sum$sdWS_T4<-apply(ws_dna_tIII_sum[,5:7], 1, sd)
+ws_dna_tIII_sum$sdWS_T24<-apply(ws_dna_tIII_sum[,8:10], 1, sd)
+ws_dna_tIII_sum<-ws_dna_tIII_sum %>% mutate_at(vars(sdWS_T0,sdWS_T4,sdWS_T24), funs(round(., 0)))
+
+# Write data to .csv file
+write.csv(ws_dna_tIII_sum, 'Norm.Results/ws.dna.tIII.mean.sd.csv')
+
+# Subset Mean values
+ws_dna_tIII_mean<-subset(ws_dna_tIII_sum, select=c(Tier_III,meanWS_T0,meanWS_T4,meanWS_T24))
+names(ws_dna_tIII_mean)<-c("Tier III", "WS - T0", "WS - T4", "WS - T24")
+
+# Subset SD values
+ws_dna_tIII_sd<-subset(ws_dna_tIII_sum, select=c(Tier_III,sdWS_T0,sdWS_T4,sdWS_T24))
+names(ws_dna_tIII_sd)<-c("Tier III", "WS - T0", "WS - T4", "WS - T24")
+
+# Remember "Tier III" as non-numeric values
+ws_dna_tIII_mean_TierIII<-ws_dna_tIII_mean$`Tier III`
+ws_dna_tIII_sd_TierIII<-ws_dna_tIII_sd$`Tier III`
+
+# Transpose all but first column (Tier II)
+ws_dna_tIII_mean<-as.data.frame(t(ws_dna_tIII_mean[,-1]))
+colnames(ws_dna_tIII_mean)<-ws_dna_tIII_mean_TierIII
+ws_dna_tIII_sd<-as.data.frame(t(ws_dna_tIII_sd[,-1]))
+colnames(ws_dna_tIII_sd)<-ws_dna_tIII_sd_TierIII
+
+# Combine mean and sd into single column with ± divider
+ws_dna_tIII_table<-as.data.frame(do.call(cbind, lapply(1:ncol(ws_dna_tIII_mean), function(i) paste0(ws_dna_tIII_mean[ , i], " ± ", ws_dna_tIII_sd[ , i]))))
+
+# Transpose the table back
+ws_dna_tIII_table<-t(ws_dna_tIII_table)
+
+# Rename columns to Sites
+colnames(ws_dna_tIII_table)<-c("Wet Sedge (T0)", "Wet Sedge (T4)", "Wet Sedge (T24)")
+
+rownames(ws_dna_tIII_table)<-ws_dna_tIII_mean_TierIII
+
+#ws_dna_tIII_table
+```
+
+Run statistical tests to determine if significant differences exist between sampling timepoints for each Tier KEGG category. Click on the **Show/Hide** button to see the statistics.
+
+<button class="btn btn-primary" data-toggle="collapse" data-target="#BlockName60"> Show/Hide </button>  
+<div id="BlockName60" class="collapse">
+```{r}
+# Subset the "sum" values for each sample
+ws_dna_tIII_stats<-subset(ws_dna_tIII_sum, select=c(Tier_III,S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115))
+
+rownames(ws_dna_tIII_stats) <- ws_dna_tIII_stats$Tier_III
+ws_dna_tIII_stats<-as.data.frame(t(ws_dna_tIII_stats[-1]))
+
+# Add the timepoint column to the sum table
+ws_dna_tIII_stats<-data.frame(Timepoint2,ws_dna_tIII_stats)
+
+# Subset response variables for MANOVA
+ws_dna_tIII_stats$response <- as.matrix(ws_dna_tIII_stats[, 2:26])
+
+# MANOVA test
+ws_dna_tIII_manova <- manova(response ~ Timepoint2, data=ws_dna_tIII_stats)
+summary.aov(ws_dna_tIII_manova)
+```
+</div>
+
+##### 7.3.2.3. Tier IV Expression
+
+Calculate GPM-normalized gene count sums for each WS sample in each Tier IV category.
+```{r}
+# Calculate GPM-normalized gene count sums for each WS sample in each Tier IV category
+ws_dna_tIV_sum<-gpm_all_pot_ann %>% group_by(Tier_IV) %>% summarise_at(vars("S107104","S107105","S107106","S107110","S107111","S107112","S107113","S107114","S107115"), sum)
+ws_dna_tIV_sum<-ws_dna_tIV_sum %>% mutate_at(vars(S107104,S107105,S107106,S107110,S107111,S107112,S107113,S107114,S107115), funs(round(., 0)))
+ws_dna_tIV_sum<-as.data.frame(ws_dna_tIV_sum)
+ws_dna_tIV_sum<-ws_dna_tIV_sum[order(-ws_dna_tIV_sum$S107104),]
+```
+
+```{r}
+# Calculate mean values from the replicate sums
+ws_dna_tIV_sum$meanWS_T0<-apply(ws_dna_tIV_sum[,2:4], 1, mean)
+ws_dna_tIV_sum$meanWS_T4<-apply(ws_dna_tIV_sum[,5:7], 1, mean)
+ws_dna_tIV_sum$meanWS_T24<-apply(ws_dna_tIV_sum[,8:10], 1, mean)
+ws_dna_tIV_sum<-ws_dna_tIV_sum %>% mutate_at(vars(meanWS_T0,meanWS_T4,meanWS_T24), funs(round(., 0)))
+
+# Calculate sd values from the replicate sums
+ws_dna_tIV_sum$sdWS_T0<-apply(ws_dna_tIV_sum[,2:4], 1, sd)
+ws_dna_tIV_sum$sdWS_T4<-apply(ws_dna_tIV_sum[,5:7], 1, sd)
+ws_dna_tIV_sum$sdWS_T24<-apply(ws_dna_tIV_sum[,8:10], 1, sd)
+ws_dna_tIV_sum<-ws_dna_tIV_sum %>% mutate_at(vars(sdWS_T0,sdWS_T4,sdWS_T24), funs(round(., 0)))
+
+# Write data to .csv file
+write.csv(ws_dna_tIV_sum, 'Norm.Results/ws.dna.tIV.mean.sd.csv')
+
+# Subset Mean values
+ws_dna_tIV_mean<-subset(ws_dna_tIV_sum, select=c(Tier_IV,meanWS_T0,meanWS_T4,meanWS_T24))
+names(ws_dna_tIV_mean)<-c("Tier IV", "WS - T0", "WS - T4", "WS - T24")
+
+# Subset SD values
+ws_dna_tIV_sd<-subset(ws_dna_tIV_sum, select=c(Tier_IV,sdWS_T0,sdWS_T4,sdWS_T24))
+names(ws_dna_tIV_sd)<-c("Tier IV", "WS - T0", "WS - T4", "WS - T24")
+
+# Remember "Tier IV" as non-numeric values
+ws_dna_tIV_mean_TierIV<-ws_dna_tIV_mean$`Tier IV`
+ws_dna_tIV_sd_TierIV<-ws_dna_tIV_sd$`Tier IV`
+
+# Transpose all but first column (Tier IV)
+ws_dna_tIV_mean<-as.data.frame(t(ws_dna_tIV_mean[,-1]))
+colnames(ws_dna_tIV_mean)<-ws_dna_tIV_mean_TierIV
+ws_dna_tIV_sd<-as.data.frame(t(ws_dna_tIV_sd[,-1]))
+colnames(ws_dna_tIV_sd)<-ws_dna_tIV_sd_TierIV
+
+# Combine mean and sd into single column with ± divider
+ws_dna_tIV_table<-as.data.frame(do.call(cbind, lapply(1:ncol(ws_dna_tIV_mean), function(i) paste0(ws_dna_tIV_mean[ , i], " ± ", ws_dna_tIV_sd[ , i]))))
+
+# Transpose the table back
+ws_dna_tIV_table<-t(ws_dna_tIV_table)
+
+# Rename columns to Sites
+colnames(ws_dna_tIV_table)<-c("Wet Sedge (T0)", "Wet Sedge (T4)", "Wet Sedge (T24)")
+
+rownames(ws_dna_tIV_table)<-ws_dna_tIV_mean_TierIV
+
+#ws_dna_tIV_table
+```
+
+### 7.4. Tundra MG Differences
+
+Evaluate differences in metagenome abundance between tussock and wet sedge tundra ecosystems.
+
+#### 7.4.1 Tundra MG Barplots
+
+Plot the combined Tuss-MG and WS-MG KEGG tier II categories as a barchart.
+```{r, echo=FALSE}
+tuss_ws_dna_tII_bardata<-read.csv("Plot.Data/tuss.ws.dna.tII.barplot.csv")
+```
+
+```{r}
+# Place the KEGG tier II categories in the preferred order for plotting
+tuss_ws_dna_tII_bardata$Tier.II <- factor(tuss_ws_dna_tII_bardata$Tier.II,levels = c("Metabolism", "Genetic Information Processing", "Environmental Information Processing", "Cellular Processes"))
+
+tuss_ws_dna_tII_bardata$Sample <- factor(tuss_ws_dna_tII_bardata$Sample,levels=c("Tuss-MG","WS-MG"))
+
+tuss_ws_dna_tII_barplot<-ggplot(tuss_ws_dna_tII_bardata, aes(x = Tier.II, y = Mean, fill = Sample)) + geom_bar(stat = "identity", position = "dodge", color="black") + geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, position = position_dodge(0.9)) + ylab(expression(atop("KEGG Tier II Categories", paste("Gene Counts")))) + theme_classic() + theme(axis.text=element_text(size=10), axis.title=element_text(size=12), axis.title.x=element_blank()) + theme(legend.position = "bottom", legend.title=element_blank(), legend.text=element_text(size=10)) + scale_size(guide=FALSE) + scale_fill_manual(values=c("gray83","black")) + scale_x_discrete(labels = function(Tier.II) str_wrap(Tier.II, width = 10)) + scale_y_continuous(expand = c(0, 0), limits = c(0, 800000)) + annotate(geom="text", x=1, y=750000, size=3, label="italic(p)==0.007", parse=TRUE) + annotate(geom="text", x=2, y=225000, size=3, label="italic(N.S.)", parse=TRUE) + annotate(geom="text", x=3, y=200000, size=3, label="italic(p)==0.001", parse=TRUE) + annotate(geom="text", x=4, y=110000, size=3, label="italic(p)==0.001", parse=TRUE) + annotate(geom="text", x=2.5, y=780000, label="Paired t-test")
+```
+
+```{r}
+tuss_ws_dna_tII_barplot
+```
+
+```{r echo=FALSE, eval=FALSE}
+# Save the MG Alpha, Beta, and tII plots together
+setEPS()
+postscript("Fig.S1.MG.Div.eps", width=6.0, height = 12.0)
+ggarrange(alpha.dna.boxplot, all.dna.pcoa, tuss_ws_dna_tII_barplot, heights=c(3,3,3),
+          labels = c("A","B","C"),
+          ncol = 1, nrow = 3, align="v")
+dev.off()
+```
+
+```{r echo=FALSE}
+tuss.ws.dna.tII.t.test<-read.csv("Stats.Data/tuss.ws.dna.tII.t.test.csv")
+```
+
+Run paired t-tests to determine significance.
+```{r}
+# Metabolism
+t.test(tuss.ws.dna.tII.t.test$Tuss.Meta,tuss.ws.dna.tII.t.test$WS.Meta,paired=TRUE)
+
+# Genetic Information Processing
+t.test(tuss.ws.dna.tII.t.test$Tuss.Gene,tuss.ws.dna.tII.t.test$WS.Gene,paired=TRUE)
+
+# Environmental Information Processing
+t.test(tuss.ws.dna.tII.t.test$Tuss.Env,tuss.ws.dna.tII.t.test$WS.Env,paired=TRUE)
+
+# Cellular Processes
+t.test(tuss.ws.dna.tII.t.test$Tuss.Cell,tuss.ws.dna.tII.t.test$WS.Cell,paired=TRUE)
+```
+
+Plot the combined Tuss-MG and WS-MG KEGG tier III categories as a single barchart.
+```{r, echo=FALSE}
+tuss_ws_dna_tIII_all_bardata<-read.csv("Plot.Data/tuss.ws.dna.tIII.all.barplot.csv")
+```
+
+```{r, echo=FALSE}
+tuss_ws_dna_tIII_all_bardata$Sample <- factor(tuss_ws_dna_tIII_all_bardata$Sample, levels=c("WS-MG", "Tuss-MG"))
+
+tuss_ws_dna_tIII_all_bardata$Tier.III <- factor(tuss_ws_dna_tIII_all_bardata$Tier.III, levels=c("Transport and catabolism ","Cell motility ","Cell growth and death ","Cellular community - prokaryotes ","Signaling molecules and interaction ","Signal transduction ","Membrane transport ","Translation ","Transcription ","Replication and repair ","Folding, sorting and degradation ","Xenobiotics biodegradation and metabolism ","Biosynthesis of other secondary metabolites ","Nucleotide metabolism ","Metabolism of terpenoids and polyketides ","Metabolism of cofactors and vitamins ","Lipid metabolism ","Glycan biosynthesis and metabolism ","Energy metabolism ","Carbohydrate metabolism ","Metabolism of other amino acids ","Amino acid metabolism "))
+
+tuss_ws_dna_tIII_all_barplot<-ggplot(tuss_ws_dna_tIII_all_bardata, aes(x = Tier.III, y = Mean, fill = Sample)) + geom_bar(stat = "identity", position = "dodge", color="black") + geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), width = 0.2, position = position_dodge(0.9)) + coord_flip() + scale_y_continuous(expand = c(0, 0), limits = c(0, 125000), position="bottom")  + ylab("Gene Counts") + theme_classic() + theme(axis.title.y=element_blank(), plot.margin = margin(10, 20, 10, 10), legend.position = "bottom", legend.title=element_blank(), legend.text=element_text(size=8)) + scale_fill_manual(values=c("black","gray83"), guide=guide_legend(reverse=TRUE))
+
+### Saving as .eps file with R Viewer
+# Re-size the viewer to the following dimensions before saving as .eps file
+# In Console, type "tuss_ws_dna_tIII_pheatmap"
+# In Plot Viewer, click "Export" --> "Save as Image"
+# Width: 500  Height: 700
+# Click "Update Preview" --> save as "EPS" file type --> rename as Fig.2.Bar
+```
+
+```{r}
+tuss_ws_dna_tIII_all_barplot
+```
+
+```{r echo=FALSE, warning=FALSE}
+tuss.ws.dna.tIII.t.test<-read.csv("Stats.Data/tuss.ws.dna.tIII.t.test.csv")
+```
+
+Run statistical tests to determine if significant differences exist between tundra communities for each KEGG Tier III category. Click on the **Show/Hide** button to see the statistics.
+
+<button class="btn btn-primary" data-toggle="collapse" data-target="#BlockName69"> Show/Hide </button>  
+<div id="BlockName69" class="collapse">
+
+Run paired t-tests to determine significance.
+```{r}
+# Amino acid metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.AA,tuss.ws.dna.tIII.t.test$WS.AA,paired=TRUE)
+
+# Other amino acid metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.OAA,tuss.ws.dna.tIII.t.test$WS.OAA,paired=TRUE)
+
+# Carbohydrate metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Carb,tuss.ws.dna.tIII.t.test$WS.Carb,paired=TRUE)
+
+# Energy metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Ener,tuss.ws.dna.tIII.t.test$WS.Ener,paired=TRUE)
+
+# Glycan metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Gly,tuss.ws.dna.tIII.t.test$WS.Gly,paired=TRUE)
+
+# Lipid metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Lip,tuss.ws.dna.tIII.t.test$WS.Lip,paired=TRUE)
+
+# Cofactor metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Cofac,tuss.ws.dna.tIII.t.test$WS.Cofac,paired=TRUE)
+
+# Terpenoids metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Terp,tuss.ws.dna.tIII.t.test$WS.Terp,paired=TRUE)
+
+# Nucleotide metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Nucleo,tuss.ws.dna.tIII.t.test$WS.Nucleo,paired=TRUE)
+
+# Secondary metabolites metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.SecMet,tuss.ws.dna.tIII.t.test$WS.SecMet,paired=TRUE)
+
+# Xenobiotics metabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Xeno,tuss.ws.dna.tIII.t.test$WS.Xeno,paired=TRUE)
+
+# Folding, sorting, and degradation
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Fold,tuss.ws.dna.tIII.t.test$WS.Fold,paired=TRUE)
+
+# Replication
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Replic,tuss.ws.dna.tIII.t.test$WS.Replic,paired=TRUE)
+
+# Transcription
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Transc,tuss.ws.dna.tIII.t.test$WS.Transc,paired=TRUE)
+
+# Translation
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Transl,tuss.ws.dna.tIII.t.test$WS.Transl,paired=TRUE)
+
+# Membrane Transport
+t.test(tuss.ws.dna.tIII.t.test$Tuss.MembTrans,tuss.ws.dna.tIII.t.test$WS.MembTrans,paired=TRUE)
+
+# Signal Transduction
+t.test(tuss.ws.dna.tIII.t.test$Tuss.SignTrans,tuss.ws.dna.tIII.t.test$WS.SignTrans,paired=TRUE)
+
+# Signaling Molecules
+t.test(tuss.ws.dna.tIII.t.test$Tuss.SignMol,tuss.ws.dna.tIII.t.test$WS.SignMol,paired=TRUE)
+
+# Cellular Community
+t.test(tuss.ws.dna.tIII.t.test$Tuss.CellComm,tuss.ws.dna.tIII.t.test$WS.CellComm,paired=TRUE)
+
+# Cellular Growth
+t.test(tuss.ws.dna.tIII.t.test$Tuss.CellGrow,tuss.ws.dna.tIII.t.test$WS.CellGrow,paired=TRUE)
+
+# Cellular Motility
+t.test(tuss.ws.dna.tIII.t.test$Tuss.CellMot,tuss.ws.dna.tIII.t.test$WS.CellMot,paired=TRUE)
+
+# Transport and Catabolism
+t.test(tuss.ws.dna.tIII.t.test$Tuss.Transp,tuss.ws.dna.tIII.t.test$WS.Transp,paired=TRUE)
+```
+</div>
+
+#### 7.4.2 Tundra MG Heatmap
+
+Heatmap for MG Tier III categories by sampling timepoints
+```{r echo=FALSE}
+tuss_ws_dna_tIII_heatmap<-read.csv("Plot.Data/tuss.ws.dna.tIII.heatmap.csv")
+```
+
+```{r}
+# Create a vector with categories in the desired order
+tuss_ws_dna_tIII_x <- c("Amino acid metabolism ",
+                        "Metabolism of other amino acids ",
+                        "Carbohydrate metabolism ",
+                        "Energy metabolism ",
+                        "Glycan biosynthesis and metabolism ",
+                        "Lipid metabolism ",
+                        "Metabolism of cofactors and vitamins ",
+                        "Metabolism of terpenoids and polyketides ",
+                        "Nucleotide metabolism ",
+                        "Biosynthesis of other secondary metabolites ",
+                        "Xenobiotics biodegradation and metabolism ",
+                        "Folding, sorting and degradation ",
+                        "Replication and repair ",
+                        "Transcription ",
+                        "Translation ",
+                        "Membrane transport ",
+                        "Signal transduction ",
+                        "Signaling molecules and interaction ",
+                        "Cellular community - prokaryotes ",
+                        "Cell growth and death ",
+                        "Cell motility ",
+                        "Transport and catabolism ")
+
+# Re-sort the data in the desired order
+tuss_ws_dna_tIII_heatmap<-tuss_ws_dna_tIII_heatmap %>%
+  slice(match(tuss_ws_dna_tIII_x, Tier_III))
+
+# Convert the first column (Tier categories) into rownames
+rownames(tuss_ws_dna_tIII_heatmap) <- tuss_ws_dna_tIII_heatmap$Tier_III
+tuss_ws_dna_tIII_heatmap<-as.data.frame(tuss_ws_dna_tIII_heatmap[-1])
+
+# Rename columns to sample IDs (This includes T24 replicates)
+colnames(tuss_ws_dna_tIII_heatmap)<-c("Tuss-MG-T0","Tuss-MG-T4","Tuss-MG-T24","WS-MG-T0","WS-MG-T4","WS-MG-T24")
+
+# Convert dataframe into a matrix for heatmap
+tuss_ws_dna_tIII_heatmap-as.matrix(tuss_ws_dna_tIII_heatmap)
+
+# Scale matrix values to generate Z-scores
+tuss_ws_dna_tIII_heatmap<-scale(t(tuss_ws_dna_tIII_heatmap))
+
+tuss_ws_dna_tIII_heatmap<-t(tuss_ws_dna_tIII_heatmap)
+
+# Specify RColorBrewer custom color palette
+col <- colorRampPalette(brewer.pal(10, "RdYlBu"))(256)
+
+### Saving as .eps file with R Viewer
+# Re-size the viewer to the following dimensions before saving as .eps file
+# In Console, type "tuss_ws_dna_tIII_pheatmap"
+# In Plot Viewer, click "Export" --> "Save as Image"
+# Width: 550  Height: 650
+# Click "Update Preview" --> save as "EPS" file type --> rename as Fig.2.Heat
+
+# Pheatmap
+tuss_ws_dna_tIII_pheatmap<-pheatmap(tuss_ws_dna_tIII_heatmap, treeheight_row = 0, treeheight_col = 0, cluster_rows = FALSE, cluster_cols = FALSE)
+```
+
+### 7.5. Fe Gene Expression
+
+Potential gene expression related to iron acquisition, iron redox cycling, and iron storage in the metagenomes were determined using FeGenie [(Garber et al. 2020)](https://www.frontiersin.org/articles/10.3389/fmicb.2020.00037/full).  FeGenie provides a comprehensive database of hidden Markov models (HMMs) based on genes related to iron acquisition, storage, and oxidation/reduction in Bacteria and Archaea, which are generally not annotated as such by established gene annotation pipelines, such as GhostKOALA, which was used to annotate the metagenomes (and metatranscriptomes) presented in this study.
+
+Here, the quality-controlled sequencing reads for each metagenome sample were assembled by tundra ecosystem using MEGAHIT to generate a tundra-specific contigs file.  The metagenome contigs files were used as input for FeGenie, which first predicted open-reading frames (ORFs) using Prodigal and then queried them against a custom library of HMMs using hmmsearch, with custom bit score cutoffs for each HMM.  Results from FeGenie included all identified putative iron-related genes, their functional category, bit score, number of canonical heme-binding motifs, amino acid sequence, and closest homolog.  Counts within each iron gene category were summarized as their relative abundance against all identified iron genes.
+
+Assemble  QC'd metagenome samples by tundra ecosystem for use in FeGenie
+````markdown
+`r ''`{Terminal}
+module load Bioinformatics megahit/1.2.8
+cat *_adtrim_clean_qtrim_fwd.derep.fastq > Tuss_DNA_data_fwd.qc.fastq
+cat *_adtrim_clean_qtrim_rev.derep.fastq > Tuss_DNA_data_rev.qc.fastq
+megahit --k-min 21 --k-max 141 --k-step 12 -1 Tuss_DNA_data_fwd.qc.fastq -2 Tuss_DNA_data_rev.qc.fastq -o ./megahit_tuss_dna_out
+cd /gpfs/accounts/gwk_root/gwk1/kjromano/DNA_assembly/WS_DNA
+cat *_adtrim_clean_qtrim_fwd.derep.fastq > WS_DNA_data_fwd.qc.fastq
+cat *_adtrim_clean_qtrim_rev.derep.fastq > WS_DNA_data_rev.qc.fastq
+megahit --k-min 21 --k-max 141 --k-step 12 -1 WS_DNA_data_fwd.qc.fastq -2 WS_DNA_data_rev.qc.fastq -o ./megahit_ws_dna_out
+````
+
+#### 7.5.1. FeGenie Summary
+
+FeGenie is a python script with dependencies that can be downloaded from  [Arkadiy-Garber GitHub](https://github.com/Arkadiy-Garber/FeGenie).
+
+Start by loading prerequisite modules
+````markdown
+`r ''`{Terminal}
+module load python3.6-anaconda Bioinformatics hmmer prodigal ncbi-blast R
+````
+
+Run the FeGenie python script
+````markdown
+`r ''`{Terminal}
+tuss_dna_run.sh
+
+# This is what's inside the "tuss_dna_run.sh" script
+FeGenie.py -bin_dir /gpfs/accounts/gwk_root/gwk1/kjromano/DNA_assembly/Tuss_DNA/megahit_tuss_dna_out/ -bin_ext fa -out tuss_dna_out
+
+ws_dna_run.sh
+
+# This is what's inside the "ws_dna_run.sh" script
+FeGenie.py -bin_dir /DNA_assembly/WS_DNA/megahit_ws_dna_out/ -bin_ext fa -out WS_dna_out
+````
+
+Summary table of the relative abundance of iron gene categories from the METAGENOMES of Tuss and WS tundra ecosystems.
+```{r echo=FALSE}
+FeGenie.DNA<-read.csv("Table.Data/FeGenie.DNA.csv")
+FeGenie.DNA
+```
+
+# Reproducibility
+
+The session information is provided for full reproducibility.
+```{r}
+devtools::session_info()
+```
