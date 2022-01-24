@@ -11,7 +11,7 @@ Romanowicz, KJ, Crump, BC, Kling, GW. **(2021)** Rainfall alters permafrost soil
  
  [Metatranscriptome Analysis]()
  
- [Gas Chromatography Analysis]()
+ [Gas Chromatography Analysis](https://rpubs.com/kjromano/SoilSystems21_GC_Analysis)
 
 **NCBI BioProject:** [PRJNA666429](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA666429) for raw .fastq files
 
