@@ -1,4 +1,4 @@
-### Romanowicz, KJ, Crump, BC, Kling, GW. (2021) Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the arctic. Soil Systems 5(1): 17.
+#### Romanowicz, KJ, Crump, BC, Kling, GW. (2021) Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the arctic. Soil Systems 5(1): 17.
 
 **DOI:** 10.3390/soilsystems5010017
 
