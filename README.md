@@ -22,6 +22,10 @@ ____________________________________________________________
 
 This R Notebook provides complete reproducibility of the data analysis in ***"Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the Arctic"*** by Romanowicz, Crump, and Kling. In this experiment, mesocosms containing soil from the active layer of two dominant tundra types were subjected to simulated rainfall to alter redox conditions.  The microbial functional potential (metagenomics) and gene expression (metatranscriptomics) patterns were measured during saturated anoxic redox conditions prior to rainfall and at multiple time points following the simulated rainfall event. Other measurements include soil properties as well as microbial respiration (CO2) and methane (CH4) production from soil subsamples collected at each sampling time point. The purpose was to determine if rainfall, as a form of soil oxidation, is sufficient to alter the anoxic redox conditions in arctic tundra and enhance the microbial degradation of organic carbon and CH4 to CO2.
 
+![Conceptual Figure](Data/Images/concept1.png)
+
+
+
 **Soil Sampling for Microbial Gene Expression**
 
 An initial soil sampling event for microbial activity was conducted at the end of the anoxic acclimation period (4-7 days) in all mesocosm replicates, representing sampling time point **T0**.  Mesocosms were then flushed to simulate a rainfall event.  Additional soil sampling events were conducted at **T4** (4-hrs) and **T24** (24-hrs) following the rainfall event to determine the temporal extent of microbial gene expression.  Soil cores (2.54 cm diameter, 30 cm length) were extracted in duplicate from each mesocosm replicate at each sampling time point and homogenized by depth in 10-cm increments.  The 10-20 cm soil increment, composed of organic soil in all mesocosm replicates, was chosen for microbial gene expression analysis and preserved in RNAlater Stabilization Reagent in sterile tubes at 4&deg;C for 18 hours and then stored at -80&deg;C until extraction.
