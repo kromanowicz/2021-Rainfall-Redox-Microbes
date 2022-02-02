@@ -40,3 +40,9 @@ An initial soil sampling event for microbial activity was conducted at the end o
 ![ ](Data/Images/Buckets.png)
 
 **Field Experiment.** Tundra soil cores were collected from field sites in August 2017 (top left) and placed in buckets to establish the mesocosm experiment (bottom left).  Tussock tundra cores were composed of an organic soil layer overlying a mineral soil layer (top middle) while wet sedge tundra cores were composed entirely of organic soil (bottom middle).  Soil subsampling for microbial activity was taken from the 10-20 cm depth of duplicate soil cores in Tussock (top right) and Wet Sedge (bottom right).
+
+![ ](Data/Images/Gases.png)
+
+**Soil Incubation**
+
+A subset of each soil sample collected from the 10-20 cm depth during the mesocosm experiment were sealed in jars for an incubation experiment to measure microbial respiration and methane production. Jars containing soil from the wet sedge tundra ecosystem were purged with N2 to reproduce anaerobic field conditions. Each jar was sealed with an airtight lid that contained a septum for gas sampling. Jars were incubated for 5 days in the dark at field temperature (4∘C). Following the 5-day incubation, we removed 20 mL of headspace gas in an evacuated syringe and immediately analyzed CO2 and CH4 concentrations via gas chromotography.
