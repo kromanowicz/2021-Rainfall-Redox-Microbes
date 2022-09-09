@@ -3,7 +3,7 @@
 ### [Karl J. Romanowicz](https://lsa.umich.edu/eeb/people/graduate-students/kjromano.html), Byron C. Crump, and George W. Kling
 ____________________________________________________________
 
-Romanowicz, KJ, Crump, BC, Kling, GW. **(2021)** Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the arctic. ***Soil Systems*** 5(1): 17. [https://doi.org/10.3390/soilsystems5010017](https://doi.org/10.3390/soilsystems5010017)
+Romanowicz KJ, Crump BC, Kling GW. **(2021)** Rainfall alters permafrost soil redox conditions, but meta-omics show divergent microbial community responses by tundra type in the arctic. ***Soil Systems*** 5(1): 17. [https://doi.org/10.3390/soilsystems5010017](https://doi.org/10.3390/soilsystems5010017)
 
 ![ ](Data/Images/SoilSystems.png)
 
