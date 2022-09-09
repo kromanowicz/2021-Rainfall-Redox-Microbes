@@ -21,7 +21,7 @@ Romanowicz, KJ, Crump, BC, Kling, GW. **(2021)** Rainfall alters permafrost soil
 
 ***Soil Systems*** **Supplementary Material:** [https://www.mdpi.com/2571-8789/5/1/17/s1](https://www.mdpi.com/2571-8789/5/1/17/s1)
 
-**Direct any questions regarding this repository to lead author** [Karl J. Romanowicz](mailto:kjromano@umich.edu)
+**Direct any questions regarding this repository to lead author:** [Karl J. Romanowicz](mailto:kjromano@umich.edu)
 ____________________________________________________________
 
 **Experimental Design**
